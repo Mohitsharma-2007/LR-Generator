@@ -68,8 +68,15 @@ export default function LRDetailScreen() {
   const html = generateLRHtml(lrData);
 
   async function handleShare() {
-    if (Platform.OS !== "web")
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (Platform.OS === "web") {
+      const win = window.open("", "_blank");
+      if (win) {
+        win.document.write(html);
+        win.document.close();
+      }
+      return;
+    }
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setGeneratingPDF(true);
     try {
       const uri = await generatePDF(lrData);
@@ -272,12 +279,12 @@ export default function LRDetailScreen() {
             {lr.lrNo}.pdf
           </Text>
           <Text style={[styles.previewSub, { color: colors.mutedForeground }]}>
-            Tap to open & share PDF
+            {Platform.OS === "web" ? "Tap to open LR in browser" : "Tap to open & share PDF"}
           </Text>
           <View style={[styles.previewBadge, { backgroundColor: (colors.gold ?? colors.primary) + "22" }]}>
-            <Feather name="share-2" size={12} color={colors.gold ?? colors.primary} />
+            <Feather name={Platform.OS === "web" ? "external-link" : "share-2"} size={12} color={colors.gold ?? colors.primary} />
             <Text style={[styles.previewBadgeText, { color: colors.gold ?? colors.primary }]}>
-              Share / Export
+              {Platform.OS === "web" ? "Open Preview" : "Share / Export"}
             </Text>
           </View>
         </TouchableOpacity>
@@ -331,7 +338,7 @@ export default function LRDetailScreen() {
               color="#0A1628"
             />
             <Text style={styles.footerShareText}>
-              {generatingPDF ? "Generating..." : "Share PDF"}
+              {Platform.OS === "web" ? "Open Preview" : generatingPDF ? "Generating..." : "Share PDF"}
             </Text>
           </LinearGradient>
         </TouchableOpacity>

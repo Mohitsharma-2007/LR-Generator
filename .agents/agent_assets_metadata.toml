@@ -1,0 +1,8 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "aIw04HQNnEjYLp3ufjZw2"
+uri = "file://artifacts/lr-generator/assets/images/icon.png"
+type = "image"
+title = "generated_image"

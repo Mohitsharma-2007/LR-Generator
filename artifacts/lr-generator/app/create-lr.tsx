@@ -193,12 +193,18 @@ export default function CreateLRScreen() {
         const saved = await addLR(lrData);
         savedId = saved.id;
 
-        const pdfUri = await generatePDF({
-          ...lrData,
-          id: saved.id,
-          createdAt: saved.createdAt,
-        });
-        await updateLR(saved.id, { pdfUri });
+        if (Platform.OS !== "web") {
+          try {
+            const pdfUri = await generatePDF({
+              ...lrData,
+              id: saved.id,
+              createdAt: saved.createdAt,
+            });
+            await updateLR(saved.id, { pdfUri });
+          } catch {
+            // PDF generation failed — LR still saved, continue
+          }
+        }
       }
 
       setShowSuccess(true);

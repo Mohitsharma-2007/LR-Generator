@@ -1,0 +1,2 @@
+- [Expo native-only modules on web](expo-native-web-stubs.md) — expo-media-library and expo-local-authentication require metro resolver stubs to work on web preview; .native.ts splitting alone is insufficient.
+- [expo-file-system v16+ API](expo-file-system-api.md) — New class-based API; legacy functional API (documentDirectory, copyAsync, etc.) is at `expo-file-system/legacy`.

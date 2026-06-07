@@ -17,7 +17,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useLR, ROUTES, COMPANY } from "@/context/LRContext";
-import { generatePDF, sharePDF, generateLRHtml } from "@/services/pdfService";
+import { generatePDF, sharePDF, shareToWhatsApp, saveToDownloads, generateLRHtml } from "@/services/pdfService";
 import { sendEmail } from "@/services/emailService";
 import { useColors } from "@/hooks/useColors";
 
@@ -80,9 +80,28 @@ export default function LRDetailScreen() {
     setGeneratingPDF(true);
     try {
       const uri = await generatePDF(lrData);
+      await saveToDownloads(uri);
       await sharePDF(uri, lrData.lrNo);
     } catch {
       Alert.alert("Error", "Failed to generate PDF.");
+    } finally {
+      setGeneratingPDF(false);
+    }
+  }
+
+  async function handleWhatsApp() {
+    if (Platform.OS === "web") {
+      Alert.alert("WhatsApp", "WhatsApp sharing is available on Android. Tap 'Open Preview' to view the LR in your browser.");
+      return;
+    }
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setGeneratingPDF(true);
+    try {
+      const uri = await generatePDF(lrData);
+      await saveToDownloads(uri);
+      await shareToWhatsApp(uri, lrData.lrNo);
+    } catch {
+      Alert.alert("Error", "Failed to share via WhatsApp.");
     } finally {
       setGeneratingPDF(false);
     }
@@ -320,6 +339,14 @@ export default function LRDetailScreen() {
           ) : (
             <Feather name="mail" size={18} color={colors.mutedForeground} />
           )}
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.footerBtn, { borderColor: "#25D366", backgroundColor: "rgba(37,211,102,0.1)" }]}
+          onPress={handleWhatsApp}
+          disabled={generatingPDF}
+        >
+          <Feather name="message-circle" size={18} color="#25D366" />
         </TouchableOpacity>
 
         <TouchableOpacity

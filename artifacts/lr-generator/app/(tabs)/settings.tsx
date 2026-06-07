@@ -4,7 +4,9 @@ import { LinearGradient } from "expo-linear-gradient";
 import React, { useState } from "react";
 import {
   Alert,
+  Animated,
   Image,
+  Modal,
   Platform,
   ScrollView,
   StyleSheet,
@@ -16,6 +18,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { useAuth } from "@/context/AuthContext";
 import { useLR } from "@/context/LRContext";
 import { useColors } from "@/hooks/useColors";
 
@@ -39,10 +42,152 @@ const sectionStyles = StyleSheet.create({
   },
 });
 
+const PIN_KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "DEL"];
+
+function PinSetupModal({
+  visible,
+  onClose,
+  onSave,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  onSave: (pin: string) => void;
+}) {
+  const colors = useColors();
+  const [step, setStep] = useState<"enter" | "confirm">("enter");
+  const [first, setFirst] = useState("");
+  const [second, setSecond] = useState("");
+  const [error, setError] = useState("");
+  const shakeAnim = React.useRef(new Animated.Value(0)).current;
+
+  const current = step === "enter" ? first : second;
+  const setCurrent = step === "enter" ? setFirst : setSecond;
+
+  function shake() {
+    Animated.sequence([
+      Animated.timing(shakeAnim, { toValue: 10, duration: 55, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: -10, duration: 55, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: 6, duration: 55, useNativeDriver: true }),
+      Animated.timing(shakeAnim, { toValue: 0, duration: 55, useNativeDriver: true }),
+    ]).start();
+  }
+
+  function pressKey(key: string) {
+    setError("");
+    if (key === "DEL") {
+      setCurrent((p) => p.slice(0, -1));
+      return;
+    }
+    if (current.length >= 4) return;
+    const next = current + key;
+    setCurrent(next);
+
+    if (next.length === 4) {
+      if (step === "enter") {
+        setTimeout(() => {
+          setStep("confirm");
+          setSecond("");
+        }, 120);
+      } else {
+        if (next === first) {
+          onSave(first);
+          reset();
+        } else {
+          setError("PINs don't match. Start over.");
+          shake();
+          setTimeout(() => {
+            setFirst("");
+            setSecond("");
+            setStep("enter");
+            setError("");
+          }, 900);
+        }
+      }
+    }
+  }
+
+  function reset() {
+    setFirst("");
+    setSecond("");
+    setStep("enter");
+    setError("");
+  }
+
+  function handleClose() {
+    reset();
+    onClose();
+  }
+
+  const dots = step === "enter" ? first : second;
+
+  return (
+    <Modal visible={visible} transparent animationType="slide">
+      <View style={pinStyles.overlay}>
+        <View style={[pinStyles.sheet, { backgroundColor: colors.card, borderTopColor: colors.border }]}>
+          <View style={pinStyles.handle} />
+          <Text style={[pinStyles.title, { color: colors.foreground }]}>
+            {step === "enter" ? "Set App PIN" : "Confirm PIN"}
+          </Text>
+          <Text style={[pinStyles.sub, { color: error ? "#E05C5C" : colors.mutedForeground }]}>
+            {error || (step === "enter" ? "Enter a 4-digit PIN" : "Re-enter your PIN to confirm")}
+          </Text>
+
+          <Animated.View style={[pinStyles.dots, { transform: [{ translateX: shakeAnim }] }]}>
+            {[0, 1, 2, 3].map((i) => (
+              <View
+                key={i}
+                style={[
+                  pinStyles.dot,
+                  { borderColor: colors.gold ?? colors.primary },
+                  dots.length > i && { backgroundColor: colors.gold ?? colors.primary },
+                ]}
+              />
+            ))}
+          </Animated.View>
+
+          <View style={pinStyles.keypad}>
+            {PIN_KEYS.map((key, idx) => (
+              <TouchableOpacity
+                key={idx}
+                style={[
+                  pinStyles.key,
+                  { borderColor: "rgba(212,168,67,0.22)", backgroundColor: "rgba(212,168,67,0.09)" },
+                  key === "" && pinStyles.keyGhost,
+                ]}
+                onPress={() => key && pressKey(key)}
+                activeOpacity={0.65}
+                disabled={key === ""}
+              >
+                {key === "DEL" ? (
+                  <Feather name="delete" size={20} color={colors.gold ?? colors.primary} />
+                ) : (
+                  <Text style={[pinStyles.keyText, { color: colors.foreground }]}>{key}</Text>
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <TouchableOpacity onPress={handleClose} style={pinStyles.cancelBtn}>
+            <Text style={[pinStyles.cancelText, { color: colors.mutedForeground }]}>Cancel</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
 export default function SettingsScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { settings, updateSettings, lrs } = useLR();
+  const {
+    biometricEnabled,
+    appPin,
+    hasBiometrics,
+    setBiometricEnabled,
+    updatePin,
+    removePin,
+  } = useAuth();
 
   const [senderEmail, setSenderEmail] = useState(settings.senderEmail);
   const [appPassword, setAppPassword] = useState(settings.googleAppPassword);
@@ -52,6 +197,7 @@ export default function SettingsScreen() {
   const [newEmail, setNewEmail] = useState("");
   const [newVehicle, setNewVehicle] = useState("");
   const [saving, setSaving] = useState(false);
+  const [showPinSetup, setShowPinSetup] = useState(false);
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
@@ -126,6 +272,38 @@ export default function SettingsScreen() {
     ]);
   }
 
+  async function handlePinSave(pin: string) {
+    await updatePin(pin);
+    setShowPinSetup(false);
+    if (Platform.OS !== "web")
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    Alert.alert("PIN Set", "App PIN has been set successfully.");
+  }
+
+  async function handleRemovePin() {
+    Alert.alert("Remove PIN", "Remove the app PIN? The app will no longer require a PIN to open.", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Remove",
+        style: "destructive",
+        onPress: async () => {
+          await removePin();
+          Alert.alert("PIN Removed", "App PIN has been removed.");
+        },
+      },
+    ]);
+  }
+
+  async function handleBiometricToggle(v: boolean) {
+    if (!hasBiometrics && v) {
+      Alert.alert("Not Available", "No fingerprint/biometric enrolled on this device.");
+      return;
+    }
+    await setBiometricEnabled(v);
+    if (Platform.OS !== "web")
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  }
+
   const inputStyle = [
     styles.input,
     {
@@ -171,14 +349,71 @@ export default function SettingsScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <SectionHeader title="Gmail Configuration" />
+        {/* Security */}
+        {Platform.OS !== "web" && (
+          <>
+            <SectionHeader title="Security" />
+            <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+              {hasBiometrics && (
+                <View style={styles.toggleRow}>
+                  <View style={styles.toggleInfo}>
+                    <Feather name="shield" size={16} color={colors.gold ?? colors.primary} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.toggleLabel, { color: colors.foreground }]}>
+                        Fingerprint Lock
+                      </Text>
+                      <Text style={[styles.toggleSub, { color: colors.mutedForeground }]}>
+                        {biometricEnabled ? "Enabled — tap fingerprint to unlock" : "Disabled"}
+                      </Text>
+                    </View>
+                  </View>
+                  <Switch
+                    value={biometricEnabled}
+                    onValueChange={handleBiometricToggle}
+                    trackColor={{ false: colors.border, true: colors.gold ?? colors.primary }}
+                    thumbColor="#fff"
+                  />
+                </View>
+              )}
 
-        <View
-          style={[
-            styles.card,
-            { backgroundColor: colors.card, borderColor: colors.border },
-          ]}
-        >
+              <View style={[styles.toggleRow, hasBiometrics && { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 12, marginTop: 4 }]}>
+                <View style={styles.toggleInfo}>
+                  <Feather name="lock" size={16} color={colors.gold ?? colors.primary} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.toggleLabel, { color: colors.foreground }]}>App PIN</Text>
+                    <Text style={[styles.toggleSub, { color: colors.mutedForeground }]}>
+                      {appPin ? "PIN is set · 4-digit code" : "No PIN configured"}
+                    </Text>
+                  </View>
+                </View>
+                <TouchableOpacity
+                  style={[styles.smallBtn, { borderColor: colors.gold ?? colors.primary }]}
+                  onPress={() => setShowPinSetup(true)}
+                >
+                  <Text style={[styles.smallBtnText, { color: colors.gold ?? colors.primary }]}>
+                    {appPin ? "Change" : "Set PIN"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              {!!appPin && (
+                <TouchableOpacity
+                  style={[styles.removePinBtn, { borderColor: colors.destructive }]}
+                  onPress={handleRemovePin}
+                >
+                  <Feather name="unlock" size={14} color={colors.destructive} />
+                  <Text style={[styles.removePinText, { color: colors.destructive }]}>
+                    Remove PIN
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </>
+        )}
+
+        {/* Gmail */}
+        <SectionHeader title="Gmail Configuration" />
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Text style={[styles.fieldLabel, { color: colors.mutedForeground }]}>
             Sender Gmail Address
           </Text>
@@ -192,9 +427,7 @@ export default function SettingsScreen() {
             autoCapitalize="none"
           />
 
-          <Text
-            style={[styles.fieldLabel, { color: colors.mutedForeground, marginTop: 12 }]}
-          >
+          <Text style={[styles.fieldLabel, { color: colors.mutedForeground, marginTop: 12 }]}>
             Google App Password
           </Text>
           <View style={styles.passwordRow}>
@@ -209,16 +442,9 @@ export default function SettingsScreen() {
             />
             <TouchableOpacity
               onPress={() => setShowPassword((p) => !p)}
-              style={[
-                styles.eyeBtn,
-                { backgroundColor: colors.muted, borderColor: colors.border },
-              ]}
+              style={[styles.eyeBtn, { backgroundColor: colors.muted, borderColor: colors.border }]}
             >
-              <Feather
-                name={showPassword ? "eye-off" : "eye"}
-                size={16}
-                color={colors.mutedForeground}
-              />
+              <Feather name={showPassword ? "eye-off" : "eye"} size={16} color={colors.mutedForeground} />
             </TouchableOpacity>
           </View>
 
@@ -228,25 +454,16 @@ export default function SettingsScreen() {
             disabled={saving}
             activeOpacity={0.85}
           >
-            <LinearGradient
-              colors={["#D4A843", "#A8782E"]}
-              style={styles.saveBtnGradient}
-            >
+            <LinearGradient colors={["#D4A843", "#A8782E"]} style={styles.saveBtnGradient}>
               <Feather name="save" size={15} color="#0A1628" />
-              <Text style={styles.saveBtnText}>
-                {saving ? "Saving..." : "Save Configuration"}
-              </Text>
+              <Text style={styles.saveBtnText}>{saving ? "Saving..." : "Save Configuration"}</Text>
             </LinearGradient>
           </TouchableOpacity>
         </View>
 
+        {/* Recipient Emails */}
         <SectionHeader title="Recipient Emails" />
-        <View
-          style={[
-            styles.card,
-            { backgroundColor: colors.card, borderColor: colors.border },
-          ]}
-        >
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.addRow}>
             <TextInput
               style={[inputStyle, { flex: 1 }]}
@@ -258,10 +475,7 @@ export default function SettingsScreen() {
               autoCapitalize="none"
             />
             <TouchableOpacity
-              style={[
-                styles.addBtn,
-                { backgroundColor: colors.gold ?? colors.primary },
-              ]}
+              style={[styles.addBtn, { backgroundColor: colors.gold ?? colors.primary }]}
               onPress={addEmail}
             >
               <Feather name="plus" size={18} color="#0A1628" />
@@ -276,16 +490,10 @@ export default function SettingsScreen() {
             settings.emailIds.map((email) => (
               <View
                 key={email}
-                style={[
-                  styles.chip,
-                  { backgroundColor: colors.muted, borderColor: colors.border },
-                ]}
+                style={[styles.chip, { backgroundColor: colors.muted, borderColor: colors.border }]}
               >
                 <Feather name="mail" size={13} color={colors.mutedForeground} />
-                <Text
-                  style={[styles.chipText, { color: colors.foreground }]}
-                  numberOfLines={1}
-                >
+                <Text style={[styles.chipText, { color: colors.foreground }]} numberOfLines={1}>
                   {email}
                 </Text>
                 <TouchableOpacity onPress={() => removeEmail(email)}>
@@ -296,13 +504,9 @@ export default function SettingsScreen() {
           )}
         </View>
 
+        {/* AI */}
         <SectionHeader title="AI Configuration" />
-        <View
-          style={[
-            styles.card,
-            { backgroundColor: colors.card, borderColor: colors.border },
-          ]}
-        >
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Text style={[styles.fieldLabel, { color: colors.mutedForeground }]}>
             OpenRouter API Key
           </Text>
@@ -318,16 +522,9 @@ export default function SettingsScreen() {
             />
             <TouchableOpacity
               onPress={() => setShowApiKey((p) => !p)}
-              style={[
-                styles.eyeBtn,
-                { backgroundColor: colors.muted, borderColor: colors.border },
-              ]}
+              style={[styles.eyeBtn, { backgroundColor: colors.muted, borderColor: colors.border }]}
             >
-              <Feather
-                name={showApiKey ? "eye-off" : "eye"}
-                size={16}
-                color={colors.mutedForeground}
-              />
+              <Feather name={showApiKey ? "eye-off" : "eye"} size={16} color={colors.mutedForeground} />
             </TouchableOpacity>
           </View>
           <Text style={[styles.hint, { color: colors.mutedForeground }]}>
@@ -339,25 +536,16 @@ export default function SettingsScreen() {
             disabled={saving}
             activeOpacity={0.85}
           >
-            <LinearGradient
-              colors={["#D4A843", "#A8782E"]}
-              style={styles.saveBtnGradient}
-            >
+            <LinearGradient colors={["#D4A843", "#A8782E"]} style={styles.saveBtnGradient}>
               <Feather name="save" size={15} color="#0A1628" />
-              <Text style={styles.saveBtnText}>
-                {saving ? "Saving..." : "Save API Key"}
-              </Text>
+              <Text style={styles.saveBtnText}>{saving ? "Saving..." : "Save API Key"}</Text>
             </LinearGradient>
           </TouchableOpacity>
         </View>
 
+        {/* Vehicles */}
         <SectionHeader title="Vehicle Management" />
-        <View
-          style={[
-            styles.card,
-            { backgroundColor: colors.card, borderColor: colors.border },
-          ]}
-        >
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.addRow}>
             <TextInput
               style={[inputStyle, { flex: 1 }]}
@@ -368,10 +556,7 @@ export default function SettingsScreen() {
               autoCapitalize="characters"
             />
             <TouchableOpacity
-              style={[
-                styles.addBtn,
-                { backgroundColor: colors.gold ?? colors.primary },
-              ]}
+              style={[styles.addBtn, { backgroundColor: colors.gold ?? colors.primary }]}
               onPress={addVehicle}
             >
               <Feather name="plus" size={18} color="#0A1628" />
@@ -381,15 +566,10 @@ export default function SettingsScreen() {
           {settings.vehicles.map((v) => (
             <View
               key={v}
-              style={[
-                styles.chip,
-                { backgroundColor: colors.muted, borderColor: colors.border },
-              ]}
+              style={[styles.chip, { backgroundColor: colors.muted, borderColor: colors.border }]}
             >
               <Feather name="truck" size={13} color={colors.mutedForeground} />
-              <Text style={[styles.chipText, { color: colors.foreground }]}>
-                {v}
-              </Text>
+              <Text style={[styles.chipText, { color: colors.foreground }]}>{v}</Text>
               <TouchableOpacity onPress={() => removeVehicle(v)}>
                 <Feather name="x" size={15} color={colors.destructive} />
               </TouchableOpacity>
@@ -397,13 +577,9 @@ export default function SettingsScreen() {
           ))}
         </View>
 
+        {/* About */}
         <SectionHeader title="About" />
-        <View
-          style={[
-            styles.card,
-            { backgroundColor: colors.card, borderColor: colors.border },
-          ]}
-        >
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.aboutRow}>
             <Image
               source={require("@/assets/logo/maha_laxmi.png")}
@@ -411,21 +587,21 @@ export default function SettingsScreen() {
               resizeMode="contain"
             />
             <View style={{ flex: 1 }}>
-              <Text style={[styles.aboutTitle, { color: colors.foreground }]}>
-                LR Generator
-              </Text>
-              <Text
-                style={[styles.aboutSubtitle, { color: colors.mutedForeground }]}
-              >
+              <Text style={[styles.aboutTitle, { color: colors.foreground }]}>LR Generator</Text>
+              <Text style={[styles.aboutSubtitle, { color: colors.mutedForeground }]}>
                 Maha Laxmi Transport Co.
               </Text>
-              <Text style={[styles.aboutVersion, { color: colors.mutedForeground }]}>
-                Version 1.0.0
-              </Text>
+              <Text style={[styles.aboutVersion, { color: colors.mutedForeground }]}>Version 1.0.0</Text>
             </View>
           </View>
         </View>
       </ScrollView>
+
+      <PinSetupModal
+        visible={showPinSetup}
+        onClose={() => setShowPinSetup(false)}
+        onSave={handlePinSave}
+      />
     </View>
   );
 }
@@ -444,12 +620,7 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 22, fontFamily: "Inter_700Bold" },
   headerSub: { fontSize: 12, fontFamily: "Inter_400Regular" },
   scrollContent: { paddingHorizontal: 16 },
-  card: {
-    borderRadius: 14,
-    borderWidth: 1,
-    padding: 16,
-    gap: 8,
-  },
+  card: { borderRadius: 14, borderWidth: 1, padding: 16, gap: 8 },
   fieldLabel: {
     fontSize: 11,
     fontFamily: "Inter_500Medium",
@@ -482,11 +653,7 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingVertical: 13,
   },
-  saveBtnText: {
-    fontSize: 14,
-    fontFamily: "Inter_700Bold",
-    color: "#0A1628",
-  },
+  saveBtnText: { fontSize: 14, fontFamily: "Inter_700Bold", color: "#0A1628" },
   addRow: { flexDirection: "row", gap: 8 },
   addBtn: {
     width: 46,
@@ -504,25 +671,87 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     gap: 8,
   },
-  chipText: {
-    flex: 1,
-    fontSize: 13,
-    fontFamily: "Inter_400Regular",
-  },
+  chipText: { flex: 1, fontSize: 13, fontFamily: "Inter_400Regular" },
   emptyChip: {
     fontSize: 13,
     fontFamily: "Inter_400Regular",
     textAlign: "center",
     paddingVertical: 8,
   },
-  hint: {
-    fontSize: 11,
-    fontFamily: "Inter_400Regular",
-    lineHeight: 16,
-  },
+  hint: { fontSize: 11, fontFamily: "Inter_400Regular", lineHeight: 16 },
   aboutRow: { flexDirection: "row", alignItems: "center", gap: 14 },
   aboutLogo: { width: 52, height: 52, borderRadius: 26 },
   aboutTitle: { fontSize: 16, fontFamily: "Inter_600SemiBold" },
   aboutSubtitle: { fontSize: 12, fontFamily: "Inter_400Regular" },
   aboutVersion: { fontSize: 11, fontFamily: "Inter_400Regular", marginTop: 2 },
+  toggleRow: { flexDirection: "row", alignItems: "center", gap: 12 },
+  toggleInfo: { flex: 1, flexDirection: "row", alignItems: "center", gap: 10 },
+  toggleLabel: { fontSize: 14, fontFamily: "Inter_500Medium" },
+  toggleSub: { fontSize: 11, fontFamily: "Inter_400Regular", marginTop: 1 },
+  smallBtn: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+  },
+  smallBtnText: { fontSize: 12, fontFamily: "Inter_500Medium" },
+  removePinBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    alignSelf: "flex-start",
+    marginTop: 4,
+  },
+  removePinText: { fontSize: 13, fontFamily: "Inter_500Medium" },
+});
+
+const pinStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    justifyContent: "flex-end",
+  },
+  sheet: {
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    borderTopWidth: 1,
+    paddingHorizontal: 24,
+    paddingTop: 12,
+    paddingBottom: 40,
+    alignItems: "center",
+  },
+  handle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    marginBottom: 20,
+  },
+  title: { fontSize: 20, fontFamily: "Inter_700Bold", marginBottom: 6 },
+  sub: { fontSize: 13, fontFamily: "Inter_400Regular", marginBottom: 24, textAlign: "center" },
+  dots: { flexDirection: "row", gap: 18, marginBottom: 28 },
+  dot: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    borderWidth: 2,
+    backgroundColor: "transparent",
+  },
+  keypad: { flexDirection: "row", flexWrap: "wrap", width: 264, gap: 10, marginBottom: 20 },
+  key: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  keyGhost: { backgroundColor: "transparent", borderColor: "transparent" },
+  keyText: { fontSize: 24, fontFamily: "Inter_400Regular" },
+  cancelBtn: { paddingVertical: 10, paddingHorizontal: 24 },
+  cancelText: { fontSize: 14, fontFamily: "Inter_500Medium" },
 });

@@ -18,7 +18,7 @@ workflows:
           echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/artifacts/lr-generator/android/local.properties"
       - name: Install Node/Workspace dependencies
         script: |
-          pnpm install
+          pnpm install --no-frozen-lockfile
       - name: Build Android release
         script: |
           cd artifacts/lr-generator/android

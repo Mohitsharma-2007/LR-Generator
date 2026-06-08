@@ -1,0 +1,43 @@
+workflows:
+  android-workflow:
+    name: Android Release Workflow
+    max_build_duration: 120
+    instance_type: mac_mini_m2
+    # To enable Android code signing, configure code signing in Codemagic UI
+    # and uncomment the environment block below.
+    # environment:
+    #   android_signing:
+    #     - keystore_reference # Replace with your Keystore Reference name
+    #   groups:
+    #     - google_play        # Replace with your Codemagic environment variable group name
+    #   vars:
+    #     PACKAGE_NAME: "com.anonymous.lrgenerator"
+    scripts:
+      - name: Set Android SDK location
+        script: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/artifacts/lr-generator/android/local.properties"
+      - name: Install Node/Workspace dependencies
+        script: |
+          npm install -g pnpm
+          pnpm install
+      - name: Build Android release
+        script: |
+          cd artifacts/lr-generator/android
+          ./gradlew assembleRelease
+          # To build a bundle (.aab) instead of apk, run:
+          # ./gradlew bundleRelease
+    artifacts:
+      - artifacts/lr-generator/android/app/build/outputs/**/*.apk
+      - artifacts/lr-generator/android/app/build/outputs/**/*.aab
+    # To enable email or Google Play publishing, uncomment the block below
+    # publishing:
+    #   email:
+    #     recipients:
+    #       - developer@example.com
+    #     notify:
+    #       success: true
+    #       failure: true
+    #   google_play:
+    #     credentials: $GOOGLE_PLAY_SERVICE_ACCOUNT_CREDENTIALS
+    #     track: internal
+    #     submit_as_draft: true

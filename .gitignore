@@ -47,3 +47,10 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# Android / Capacitor
+LR-WEBAPP/android/local.properties
+LR-WEBAPP/android/.gradle/
+LR-WEBAPP/android/build/
+LR-WEBAPP/android/app/build/
+LR-WEBAPP/android/capacitor-cordova-android-plugins/build/

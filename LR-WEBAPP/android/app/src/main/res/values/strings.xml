@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Lorry Receipt Generator</string>
+    <string name="title_activity_main">Lorry Receipt Generator</string>
+    <string name="package_name">com.mahalaxmitransport.lrgenerator</string>
+    <string name="custom_url_scheme">com.mahalaxmitransport.lrgenerator</string>
+</resources>

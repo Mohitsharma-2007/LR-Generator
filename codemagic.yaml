@@ -18,7 +18,6 @@ workflows:
           echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/artifacts/lr-generator/android/local.properties"
       - name: Install Node/Workspace dependencies
         script: |
-          npm install -g pnpm
           pnpm install
       - name: Build Android release
         script: |

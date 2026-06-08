@@ -94,7 +94,7 @@ android {
     externalNativeBuild {
         cmake {
             // Use a shorter path for CMake build files
-            buildStagingDirectory.set(file("${buildDir}/.cxx"))
+            buildStagingDirectory = file("${buildDir}/.cxx")
         }
     }
 

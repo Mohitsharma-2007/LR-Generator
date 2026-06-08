@@ -1,11 +1,13 @@
 export { generateLRHtml } from "./pdfHtml";
 
+import { Asset } from "expo-asset";
 import * as FileSystem from "expo-file-system/legacy";
 import * as MediaLibrary from "expo-media-library";
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
 
 import type { LRRecord } from "../context/LRContext";
+import { generateLRHtml } from "./pdfHtml";
 
 const MLTC_DIR = (FileSystem.documentDirectory ?? "") + "MLTC_LRs/";
 
@@ -16,13 +18,29 @@ async function ensureMltcDir(): Promise<void> {
   }
 }
 
+async function loadLogoBase64(): Promise<string | undefined> {
+  try {
+    const asset = Asset.fromModule(
+      require("../assets/logo/maha_laxmi.png") as number
+    );
+    await asset.downloadAsync();
+    if (!asset.localUri) return undefined;
+    const base64 = await FileSystem.readAsStringAsync(asset.localUri, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+    return `data:image/png;base64,${base64}`;
+  } catch {
+    return undefined;
+  }
+}
+
 function safeName(lrNo: string): string {
   return lrNo.replace(/[^a-zA-Z0-9-_]/g, "_");
 }
 
 export async function generatePDF(lr: LRRecord): Promise<string> {
-  const { generateLRHtml } = await import("./pdfHtml");
-  const html = generateLRHtml(lr);
+  const logoDataUri = await loadLogoBase64();
+  const html = generateLRHtml(lr, logoDataUri);
   const { uri: tempUri } = await Print.printToFileAsync({ html, base64: false });
 
   await ensureMltcDir();
@@ -51,7 +69,10 @@ export async function sharePDF(uri: string, lrNo: string): Promise<void> {
   }
 }
 
-export async function shareToWhatsApp(uri: string, lrNo: string): Promise<void> {
+export async function shareToWhatsApp(
+  uri: string,
+  lrNo: string
+): Promise<void> {
   const canShare = await Sharing.isAvailableAsync();
   if (!canShare) return;
   await Sharing.shareAsync(uri, {

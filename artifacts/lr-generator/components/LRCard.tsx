@@ -12,7 +12,6 @@ import {
 } from "react-native";
 
 import { ROUTES, type LRRecord } from "@/context/LRContext";
-import { useColors } from "@/hooks/useColors";
 
 interface LRCardProps {
   lr: LRRecord;
@@ -21,7 +20,6 @@ interface LRCardProps {
 }
 
 export function LRCard({ lr, onDelete, onShare }: LRCardProps) {
-  const colors = useColors();
   const route = ROUTES[lr.routeId];
 
   function handlePress() {
@@ -30,146 +28,139 @@ export function LRCard({ lr, onDelete, onShare }: LRCardProps) {
   }
 
   function handleDelete() {
-    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    if (Platform.OS !== "web")
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     Alert.alert(
       "Delete LR",
-      `Are you sure you want to delete ${lr.lrNo}? This cannot be undone.`,
+      `Delete ${lr.lrNo}? This cannot be undone.`,
       [
         { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: () => onDelete(lr.id),
-        },
+        { text: "Delete", style: "destructive", onPress: () => onDelete(lr.id) },
       ]
     );
   }
 
-  const styles = StyleSheet.create({
-    card: {
-      backgroundColor: colors.card,
-      borderRadius: 14,
-      padding: 16,
-      marginBottom: 12,
-      borderWidth: 1,
-      borderColor: colors.border,
-    },
-    topRow: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "flex-start",
-      marginBottom: 10,
-    },
-    lrNo: {
-      fontSize: 18,
-      fontFamily: "Inter_700Bold",
-      color: colors.gold ?? colors.primary,
-      letterSpacing: 0.5,
-    },
-    date: {
-      fontSize: 12,
-      color: colors.mutedForeground,
-      fontFamily: "Inter_400Regular",
-    },
-    routeBadge: {
-      flexDirection: "row",
-      alignItems: "center",
-      backgroundColor: colors.muted,
-      borderRadius: 8,
-      paddingHorizontal: 10,
-      paddingVertical: 4,
-      marginBottom: 10,
-      alignSelf: "flex-start",
-    },
-    routeText: {
-      color: colors.mutedForeground,
-      fontSize: 11,
-      fontFamily: "Inter_500Medium",
-      marginLeft: 6,
-    },
-    infoRow: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginTop: 8,
-      paddingTop: 8,
-      borderTopWidth: 1,
-      borderTopColor: colors.border,
-    },
-    vehicleText: {
-      fontSize: 13,
-      color: colors.foreground,
-      fontFamily: "Inter_500Medium",
-    },
-    freightText: {
-      fontSize: 15,
-      fontFamily: "Inter_700Bold",
-      color: colors.gold ?? colors.primary,
-    },
-    actions: {
-      flexDirection: "row",
-      gap: 12,
-      marginTop: 12,
-      paddingTop: 10,
-      borderTopWidth: 1,
-      borderTopColor: colors.border,
-    },
-    actionBtn: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 4,
-      padding: 6,
-    },
-    actionText: {
-      fontSize: 12,
-      fontFamily: "Inter_500Medium",
-      color: colors.mutedForeground,
-    },
-    deleteText: {
-      color: colors.destructive,
-    },
-  });
-
   return (
-    <TouchableOpacity style={styles.card} onPress={handlePress} activeOpacity={0.8}>
+    <TouchableOpacity style={styles.card} onPress={handlePress} activeOpacity={0.75}>
       <View style={styles.topRow}>
-        <View>
+        <View style={styles.topLeft}>
           <Text style={styles.lrNo}>{lr.lrNo}</Text>
-          <Text style={styles.date}>{lr.date}</Text>
+          <View style={styles.routeBadge}>
+            <Feather name="map-pin" size={9} color="rgba(255,255,255,0.35)" />
+            <Text style={styles.routeText}>{route.name}</Text>
+          </View>
         </View>
-        <View style={styles.routeBadge}>
-          <Feather name="map-pin" size={11} color={colors.mutedForeground} />
-          <Text style={styles.routeText}>{route.name}</Text>
+        <View style={styles.topRight}>
+          <Text style={styles.freightText}>
+            ₹{lr.frightCharge.toLocaleString("en-IN")}
+          </Text>
+          <Text style={styles.dateText}>{lr.date}</Text>
         </View>
       </View>
 
-      <View style={styles.infoRow}>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-          <Feather name="truck" size={13} color={colors.mutedForeground} />
+      <View style={styles.divider} />
+
+      <View style={styles.bottomRow}>
+        <View style={styles.vehicleRow}>
+          <Feather name="truck" size={12} color="rgba(255,255,255,0.3)" />
           <Text style={styles.vehicleText}>{lr.vehicleNo}</Text>
         </View>
-        <Text style={styles.freightText}>
-          ₹{lr.frightCharge.toLocaleString("en-IN")}
-        </Text>
-      </View>
-
-      <View style={styles.actions}>
-        <TouchableOpacity
-          style={styles.actionBtn}
-          onPress={() => router.push(`/create-lr?edit=${lr.id}`)}
-        >
-          <Feather name="edit-2" size={13} color={colors.mutedForeground} />
-          <Text style={styles.actionText}>Edit</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionBtn} onPress={() => onShare(lr)}>
-          <Feather name="share-2" size={13} color={colors.mutedForeground} />
-          <Text style={styles.actionText}>Share</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionBtn} onPress={handleDelete}>
-          <Feather name="trash-2" size={13} color={colors.destructive} />
-          <Text style={[styles.actionText, styles.deleteText]}>Delete</Text>
-        </TouchableOpacity>
+        <View style={styles.actions}>
+          <TouchableOpacity
+            style={styles.actionBtn}
+            onPress={() => router.push(`/create-lr?edit=${lr.id}`)}
+          >
+            <Feather name="edit-2" size={13} color="rgba(255,255,255,0.4)" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionBtn} onPress={() => onShare(lr)}>
+            <Feather name="share-2" size={13} color="rgba(255,255,255,0.4)" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionBtn} onPress={handleDelete}>
+            <Feather name="trash-2" size={13} color="rgba(214,61,61,0.7)" />
+          </TouchableOpacity>
+          <Feather name="chevron-right" size={14} color="rgba(212,168,67,0.5)" />
+        </View>
       </View>
     </TouchableOpacity>
   );
 }
+
+const styles = StyleSheet.create({
+  card: {
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.09)",
+  },
+  topRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 12,
+  },
+  topLeft: { gap: 5 },
+  topRight: { alignItems: "flex-end", gap: 3 },
+  lrNo: {
+    fontSize: 17,
+    fontFamily: "Inter_700Bold",
+    color: "#D4A843",
+    letterSpacing: 0.3,
+  },
+  routeBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: "rgba(255,255,255,0.06)",
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    alignSelf: "flex-start",
+  },
+  routeText: {
+    color: "rgba(255,255,255,0.4)",
+    fontSize: 10,
+    fontFamily: "Inter_500Medium",
+  },
+  freightText: {
+    fontSize: 16,
+    fontFamily: "Inter_700Bold",
+    color: "#FFFFFF",
+  },
+  dateText: {
+    fontSize: 11,
+    fontFamily: "Inter_400Regular",
+    color: "rgba(255,255,255,0.35)",
+  },
+  divider: {
+    height: 1,
+    backgroundColor: "rgba(255,255,255,0.07)",
+    marginBottom: 10,
+  },
+  bottomRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  vehicleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  vehicleText: {
+    fontSize: 12,
+    color: "rgba(255,255,255,0.45)",
+    fontFamily: "Inter_500Medium",
+  },
+  actions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  actionBtn: {
+    padding: 6,
+    borderRadius: 8,
+    backgroundColor: "rgba(255,255,255,0.05)",
+  },
+});

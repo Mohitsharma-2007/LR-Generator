@@ -1,5 +1,6 @@
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
+import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useMemo, useState } from "react";
 import {
@@ -15,14 +16,18 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { LRCard } from "@/components/LRCard";
-import { useLR, ROUTES, type LRRecord } from "@/context/LRContext";
+import { useLR, type LRRecord } from "@/context/LRContext";
 import { generatePDF, sharePDF } from "@/services/pdfService";
-import { useColors } from "@/hooks/useColors";
 
 type FilterType = "all" | "1" | "2";
 
+const FILTERS: { key: FilterType; label: string }[] = [
+  { key: "all", label: "All" },
+  { key: "1", label: "Chennai → Manesar" },
+  { key: "2", label: "Manesar → Chennai" },
+];
+
 export default function LRsScreen() {
-  const colors = useColors();
   const insets = useSafeAreaInsets();
   const { lrs, deleteLR } = useLR();
   const [search, setSearch] = useState("");
@@ -50,116 +55,92 @@ export default function LRsScreen() {
       const uri = await generatePDF(lr);
       await sharePDF(uri, lr.lrNo);
     } catch {
-      Alert.alert("Error", "Failed to generate PDF for sharing.");
+      Alert.alert("Error", "Failed to generate PDF.");
     } finally {
       setSharing(null);
     }
   }
 
-  const topPad = Platform.OS === "web" ? 67 : insets.top;
+  const topPad = Platform.OS === "web" ? 52 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View
-        style={[
-          styles.header,
-          {
-            backgroundColor: colors.surface ?? colors.card,
-            paddingTop: topPad + 8,
-            borderBottomColor: colors.border,
-          },
-        ]}
-      >
-        <Text style={[styles.title, { color: colors.foreground }]}>
-          Lorry Receipts
-        </Text>
-        <TouchableOpacity
-          style={[
-            styles.addBtn,
-            { backgroundColor: colors.gold ?? colors.primary },
-          ]}
-          onPress={() => {
-            if (Platform.OS !== "web")
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            router.push("/create-lr");
-          }}
-        >
-          <Feather name="plus" size={18} color="#0A1628" />
-        </TouchableOpacity>
-      </View>
+    <View style={styles.container}>
+      <LinearGradient
+        colors={["#0D1E36", "#060E1C"]}
+        style={StyleSheet.absoluteFill}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+      />
 
-      <View
-        style={[
-          styles.searchBar,
-          {
-            backgroundColor: colors.card,
-            borderColor: colors.border,
-            marginHorizontal: 16,
-            marginTop: 12,
-          },
-        ]}
-      >
-        <Feather name="search" size={16} color={colors.mutedForeground} />
-        <TextInput
-          style={[styles.searchInput, { color: colors.foreground }]}
-          value={search}
-          onChangeText={setSearch}
-          placeholder="Search by LR No, vehicle..."
-          placeholderTextColor={colors.mutedForeground}
-        />
-        {search.length > 0 && (
-          <TouchableOpacity onPress={() => setSearch("")}>
-            <Feather name="x" size={16} color={colors.mutedForeground} />
-          </TouchableOpacity>
-        )}
-      </View>
-
-      <View style={styles.filterRow}>
-        {(["all", "1", "2"] as FilterType[]).map((f) => (
-          <TouchableOpacity
-            key={f}
-            style={[
-              styles.filterChip,
-              {
-                backgroundColor:
-                  filter === f
-                    ? colors.gold ?? colors.primary
-                    : colors.card,
-                borderColor:
-                  filter === f
-                    ? colors.gold ?? colors.primary
-                    : colors.border,
-              },
-            ]}
-            onPress={() => setFilter(f)}
-          >
-            <Text
-              style={[
-                styles.filterText,
-                {
-                  color:
-                    filter === f ? "#0A1628" : colors.mutedForeground,
-                },
-              ]}
-            >
-              {f === "all"
-                ? "All"
-                : f === "1"
-                ? "Chennai→Manesar"
-                : "Manesar→Chennai"}
+      <View style={[styles.header, { paddingTop: topPad + 10 }]}>
+        <View style={styles.headerTop}>
+          <View>
+            <Text style={styles.title}>Receipts</Text>
+            <Text style={styles.subtitle}>
+              {lrs.length} lorry receipt{lrs.length !== 1 ? "s" : ""}
             </Text>
+          </View>
+          <TouchableOpacity
+            style={styles.addBtn}
+            onPress={() => {
+              if (Platform.OS !== "web")
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.push("/create-lr");
+            }}
+          >
+            <LinearGradient colors={["#D4A843", "#A8782E"]} style={styles.addBtnGrad}>
+              <Feather name="plus" size={20} color="#0A1628" />
+            </LinearGradient>
           </TouchableOpacity>
-        ))}
+        </View>
+
+        <View style={styles.searchBar}>
+          <Feather name="search" size={15} color="rgba(255,255,255,0.3)" />
+          <TextInput
+            style={styles.searchInput}
+            value={search}
+            onChangeText={setSearch}
+            placeholder="Search LR No, vehicle…"
+            placeholderTextColor="rgba(255,255,255,0.25)"
+          />
+          {search.length > 0 && (
+            <TouchableOpacity onPress={() => setSearch("")}>
+              <Feather name="x-circle" size={15} color="rgba(255,255,255,0.3)" />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        <View style={styles.filterRow}>
+          {FILTERS.map((f) => (
+            <TouchableOpacity
+              key={f.key}
+              style={[
+                styles.filterChip,
+                filter === f.key && styles.filterChipActive,
+              ]}
+              onPress={() => setFilter(f.key)}
+            >
+              <Text
+                style={[
+                  styles.filterText,
+                  filter === f.key && styles.filterTextActive,
+                ]}
+              >
+                {f.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
       </View>
 
       {filtered.length === 0 ? (
         <View style={styles.empty}>
-          <Feather name="file-text" size={48} color={colors.mutedForeground} />
-          <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
-            {lrs.length === 0 ? "No LRs yet" : "No results found"}
+          <Feather name="file-text" size={44} color="rgba(255,255,255,0.08)" />
+          <Text style={styles.emptyTitle}>
+            {lrs.length === 0 ? "No LRs yet" : "No results"}
           </Text>
-          <Text style={[styles.emptySubtitle, { color: colors.mutedForeground }]}>
+          <Text style={styles.emptySubtitle}>
             {lrs.length === 0
               ? "Tap + to create your first LR"
               : "Try a different search or filter"}
@@ -170,22 +151,16 @@ export default function LRsScreen() {
           data={filtered}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <LRCard
-              lr={item}
-              onDelete={deleteLR}
-              onShare={handleShare}
-            />
+            <LRCard lr={item} onDelete={deleteLR} onShare={handleShare} />
           )}
           contentContainerStyle={[
             styles.list,
-            { paddingBottom: bottomPad + 80 },
+            { paddingBottom: bottomPad + 108 },
           ]}
           scrollEnabled={!!filtered.length}
           showsVerticalScrollIndicator={false}
           ListHeaderComponent={
-            <Text
-              style={[styles.countText, { color: colors.mutedForeground }]}
-            >
+            <Text style={styles.countLabel}>
               {filtered.length} record{filtered.length !== 1 ? "s" : ""}
             </Text>
           }
@@ -196,81 +171,104 @@ export default function LRsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, backgroundColor: "#060E1C" },
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     paddingBottom: 14,
-    borderBottomWidth: 1,
+    gap: 14,
+  },
+  headerTop: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "space-between",
   },
   title: {
-    fontSize: 22,
+    fontSize: 30,
     fontFamily: "Inter_700Bold",
+    color: "#FFFFFF",
+    letterSpacing: -0.5,
   },
-  addBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 11,
+  subtitle: {
+    fontSize: 12,
+    fontFamily: "Inter_400Regular",
+    color: "rgba(255,255,255,0.35)",
+    marginTop: 1,
+  },
+  addBtn: { borderRadius: 14, overflow: "hidden" },
+  addBtnGrad: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
   },
   searchBar: {
     flexDirection: "row",
     alignItems: "center",
-    borderRadius: 12,
+    backgroundColor: "rgba(255,255,255,0.06)",
+    borderRadius: 14,
     borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    gap: 8,
-    marginBottom: 10,
+    borderColor: "rgba(255,255,255,0.08)",
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+    gap: 10,
   },
   searchInput: {
     flex: 1,
     fontSize: 14,
     fontFamily: "Inter_400Regular",
+    color: "#FFFFFF",
   },
   filterRow: {
     flexDirection: "row",
     gap: 8,
-    paddingHorizontal: 16,
-    marginBottom: 12,
     flexWrap: "wrap",
   },
   filterChip: {
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 6,
+    backgroundColor: "rgba(255,255,255,0.05)",
     borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+  },
+  filterChipActive: {
+    backgroundColor: "rgba(212,168,67,0.18)",
+    borderColor: "rgba(212,168,67,0.4)",
   },
   filterText: {
     fontSize: 12,
     fontFamily: "Inter_500Medium",
+    color: "rgba(255,255,255,0.4)",
   },
-  list: { paddingHorizontal: 16 },
-  countText: {
-    fontSize: 11,
-    fontFamily: "Inter_500Medium",
-    marginBottom: 10,
-    letterSpacing: 0.5,
+  filterTextActive: { color: "#D4A843" },
+  list: { paddingHorizontal: 20, paddingTop: 4 },
+  countLabel: {
+    fontSize: 10,
+    fontFamily: "Inter_600SemiBold",
+    color: "rgba(255,255,255,0.25)",
+    letterSpacing: 1.5,
     textTransform: "uppercase",
+    marginBottom: 12,
   },
   empty: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    gap: 12,
-    paddingHorizontal: 40,
+    gap: 10,
+    paddingHorizontal: 48,
   },
   emptyTitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontFamily: "Inter_600SemiBold",
+    color: "rgba(255,255,255,0.5)",
     textAlign: "center",
   },
   emptySubtitle: {
     fontSize: 13,
     fontFamily: "Inter_400Regular",
+    color: "rgba(255,255,255,0.25)",
     textAlign: "center",
+    lineHeight: 18,
   },
 });

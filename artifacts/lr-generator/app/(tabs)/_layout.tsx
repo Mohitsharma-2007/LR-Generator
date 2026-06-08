@@ -9,14 +9,31 @@ import { useColors } from "@/hooks/useColors";
 function TabIcon({
   name,
   color,
-  size,
+  focused,
 }: {
   name: React.ComponentProps<typeof Feather>["name"];
   color: string;
-  size: number;
+  focused: boolean;
 }) {
-  return <Feather name={name} size={size} color={color} />;
+  return (
+    <View style={[tabIconStyles.wrap, focused && tabIconStyles.active]}>
+      <Feather name={name} size={20} color={color} />
+    </View>
+  );
 }
+
+const tabIconStyles = StyleSheet.create({
+  wrap: {
+    width: 36,
+    height: 28,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 14,
+  },
+  active: {
+    backgroundColor: "rgba(212,168,67,0.15)",
+  },
+});
 
 export default function TabLayout() {
   const colors = useColors();
@@ -27,37 +44,51 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.gold ?? colors.primary,
-        tabBarInactiveTintColor: colors.mutedForeground,
-        tabBarStyle: {
-          position: "absolute",
-          backgroundColor: isIOS ? "transparent" : colors.navy ?? colors.background,
-          borderTopWidth: 1,
-          borderTopColor: colors.border,
-          elevation: 0,
-          height: isWeb ? 84 : 60,
-          paddingBottom: isWeb ? 24 : 8,
-          paddingTop: 8,
-        },
+        tabBarActiveTintColor: "#D4A843",
+        tabBarInactiveTintColor: "rgba(255,255,255,0.35)",
+        tabBarStyle: isWeb
+          ? {
+              backgroundColor: "#0A1628",
+              borderTopWidth: 1,
+              borderTopColor: "rgba(255,255,255,0.08)",
+              height: 60,
+              paddingBottom: 8,
+              paddingTop: 8,
+            }
+          : {
+              position: "absolute",
+              bottom: 24,
+              left: 20,
+              right: 20,
+              height: 66,
+              borderRadius: 33,
+              backgroundColor: isIOS ? "transparent" : "rgba(6,12,24,0.94)",
+              borderWidth: 1,
+              borderColor: "rgba(255,255,255,0.1)",
+              elevation: 32,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 8 },
+              shadowOpacity: 0.4,
+              shadowRadius: 24,
+              paddingBottom: 10,
+              paddingTop: 8,
+            },
         tabBarBackground: () =>
-          isIOS ? (
+          !isWeb && isIOS ? (
             <BlurView
-              intensity={80}
+              intensity={75}
               tint="dark"
-              style={StyleSheet.absoluteFill}
+              style={[StyleSheet.absoluteFill, { borderRadius: 33 }]}
             />
-          ) : (
-            <View
-              style={[
-                StyleSheet.absoluteFill,
-                { backgroundColor: colors.navy ?? colors.background },
-              ]}
-            />
-          ),
+          ) : null,
         tabBarLabelStyle: {
           fontFamily: "Inter_500Medium",
-          fontSize: 10,
-          letterSpacing: 0.3,
+          fontSize: 9.5,
+          letterSpacing: 0.2,
+          marginTop: -3,
+        },
+        tabBarItemStyle: {
+          paddingTop: 4,
         },
       }}
     >
@@ -65,8 +96,8 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "Home",
-          tabBarIcon: ({ color, size }) => (
-            <TabIcon name="home" color={color} size={size} />
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name="home" color={color} focused={focused} />
           ),
         }}
       />
@@ -74,8 +105,8 @@ export default function TabLayout() {
         name="lrs"
         options={{
           title: "LRs",
-          tabBarIcon: ({ color, size }) => (
-            <TabIcon name="file-text" color={color} size={size} />
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name="file-text" color={color} focused={focused} />
           ),
         }}
       />
@@ -83,8 +114,8 @@ export default function TabLayout() {
         name="scan"
         options={{
           title: "AI Scan",
-          tabBarIcon: ({ color, size }) => (
-            <TabIcon name="camera" color={color} size={size} />
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name="camera" color={color} focused={focused} />
           ),
         }}
       />
@@ -92,8 +123,8 @@ export default function TabLayout() {
         name="settings"
         options={{
           title: "Settings",
-          tabBarIcon: ({ color, size }) => (
-            <TabIcon name="settings" color={color} size={size} />
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon name="sliders" color={color} focused={focused} />
           ),
         }}
       />

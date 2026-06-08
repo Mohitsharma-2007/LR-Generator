@@ -2,8 +2,6 @@ import { Feather } from "@expo/vector-icons";
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-import { useColors } from "@/hooks/useColors";
-
 interface StatCardProps {
   label: string;
   value: string | number;
@@ -12,54 +10,24 @@ interface StatCardProps {
 }
 
 export function StatCard({ label, value, icon, highlight }: StatCardProps) {
-  const colors = useColors();
-
   return (
     <View
       style={[
         styles.card,
-        {
-          backgroundColor: highlight ? colors.primary : colors.card,
-          borderColor: highlight ? colors.primary : colors.border,
-        },
+        highlight ? styles.cardHighlight : styles.cardDefault,
       ]}
     >
-      <View
-        style={[
-          styles.iconBox,
-          {
-            backgroundColor: highlight
-              ? "rgba(0,0,0,0.2)"
-              : colors.muted,
-          },
-        ]}
-      >
+      <View style={[styles.iconBox, highlight ? styles.iconBoxHL : styles.iconBoxDefault]}>
         <Feather
           name={icon}
-          size={16}
-          color={highlight ? colors.primaryForeground : colors.gold ?? colors.primary}
+          size={15}
+          color={highlight ? "#0A1628" : "#D4A843"}
         />
       </View>
-      <Text
-        style={[
-          styles.value,
-          {
-            color: highlight ? colors.primaryForeground : colors.gold ?? colors.primary,
-          },
-        ]}
-      >
+      <Text style={[styles.value, highlight ? styles.valueHL : styles.valueDefault]}>
         {value}
       </Text>
-      <Text
-        style={[
-          styles.label,
-          {
-            color: highlight
-              ? "rgba(255,255,255,0.7)"
-              : colors.mutedForeground,
-          },
-        ]}
-      >
+      <Text style={[styles.label, highlight ? styles.labelHL : styles.labelDefault]}>
         {label}
       </Text>
     </View>
@@ -69,29 +37,47 @@ export function StatCard({ label, value, icon, highlight }: StatCardProps) {
 const styles = StyleSheet.create({
   card: {
     flex: 1,
-    borderRadius: 14,
+    borderRadius: 18,
     padding: 14,
     alignItems: "center",
     borderWidth: 1,
-    gap: 6,
+    gap: 5,
+  },
+  cardDefault: {
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderColor: "rgba(255,255,255,0.09)",
+  },
+  cardHighlight: {
+    backgroundColor: "rgba(212,168,67,0.18)",
+    borderColor: "rgba(212,168,67,0.4)",
   },
   iconBox: {
-    width: 34,
-    height: 34,
+    width: 32,
+    height: 32,
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 2,
   },
+  iconBoxDefault: {
+    backgroundColor: "rgba(212,168,67,0.12)",
+  },
+  iconBoxHL: {
+    backgroundColor: "rgba(10,22,40,0.25)",
+  },
   value: {
     fontSize: 22,
     fontFamily: "Inter_700Bold",
   },
+  valueDefault: { color: "#FFFFFF" },
+  valueHL: { color: "#0A1628" },
   label: {
-    fontSize: 10,
-    fontFamily: "Inter_500Medium",
+    fontSize: 9.5,
+    fontFamily: "Inter_600SemiBold",
     textAlign: "center",
-    letterSpacing: 0.3,
+    letterSpacing: 0.8,
     textTransform: "uppercase",
   },
+  labelDefault: { color: "rgba(255,255,255,0.45)" },
+  labelHL: { color: "rgba(10,22,40,0.65)" },
 });

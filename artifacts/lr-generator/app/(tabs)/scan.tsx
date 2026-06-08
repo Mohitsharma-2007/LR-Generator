@@ -18,9 +18,8 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { useLR, ROUTES } from "@/context/LRContext";
+import { useLR } from "@/context/LRContext";
 import { extractFromImage } from "@/services/aiService";
-import { useColors } from "@/hooks/useColors";
 
 interface Extracted {
   route: string | null;
@@ -29,9 +28,8 @@ interface Extracted {
 }
 
 export default function ScanScreen() {
-  const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { settings, getNextLrNo } = useLR();
+  const { settings } = useLR();
   const lottieRef = useRef<LottieView>(null);
 
   const [imageUri, setImageUri] = useState<string | null>(null);
@@ -41,7 +39,8 @@ export default function ScanScreen() {
   const [editedConsignment, setEditedConsignment] = useState("");
   const [editedInvoices, setEditedInvoices] = useState("");
 
-  const topPad = Platform.OS === "web" ? 67 : insets.top;
+  const topPad = Platform.OS === "web" ? 52 : insets.top;
+  const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
 
   async function pickImage(fromCamera: boolean) {
     if (Platform.OS !== "web")
@@ -54,22 +53,14 @@ export default function ScanScreen() {
         Alert.alert("Permission Required", "Camera access is needed to scan LRs.");
         return;
       }
-      result = await ImagePicker.launchCameraAsync({
-        mediaTypes: "images",
-        quality: 0.8,
-        base64: true,
-      });
+      result = await ImagePicker.launchCameraAsync({ mediaTypes: "images", quality: 0.8, base64: true });
     } else {
       const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!perm.granted) {
         Alert.alert("Permission Required", "Photo library access is needed.");
         return;
       }
-      result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: "images",
-        quality: 0.8,
-        base64: true,
-      });
+      result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: "images", quality: 0.8, base64: true });
     }
 
     if (!result.canceled && result.assets?.[0]) {
@@ -82,13 +73,9 @@ export default function ScanScreen() {
 
   async function processImage(base64: string) {
     if (!settings.openrouterApiKey) {
-      Alert.alert(
-        "API Key Required",
-        "Please add your OpenRouter API key in Settings to use AI extraction."
-      );
+      Alert.alert("API Key Required", "Add your OpenRouter API key in Settings.");
       return;
     }
-
     setLoading(true);
     try {
       const result = await extractFromImage(base64, settings.openrouterApiKey);
@@ -99,10 +86,7 @@ export default function ScanScreen() {
       if (Platform.OS !== "web")
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch {
-      Alert.alert(
-        "Extraction Failed",
-        "AI could not extract data from the image. Please enter details manually."
-      );
+      Alert.alert("Extraction Failed", "AI could not extract data. Please enter details manually.");
     } finally {
       setLoading(false);
     }
@@ -111,20 +95,11 @@ export default function ScanScreen() {
   function handleFillForm() {
     if (Platform.OS !== "web")
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-
     const routeId = editedRoute?.includes("Manesar →") ? 2 : 1;
-    const invoiceList = editedInvoices
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-
+    const invoiceList = editedInvoices.split(",").map((s) => s.trim()).filter(Boolean);
     router.push({
       pathname: "/create-lr",
-      params: {
-        routeId: routeId.toString(),
-        consignmentNo: editedConsignment,
-        invoiceNos: invoiceList.join("|"),
-      },
+      params: { routeId: routeId.toString(), consignmentNo: editedConsignment, invoiceNos: invoiceList.join("|") },
     });
   }
 
@@ -137,46 +112,30 @@ export default function ScanScreen() {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View
-        style={[
-          styles.header,
-          {
-            backgroundColor: colors.surface ?? colors.card,
-            paddingTop: topPad + 8,
-            borderBottomColor: colors.border,
-          },
-        ]}
-      >
-        <Text style={[styles.title, { color: colors.foreground }]}>
-          AI Scan
-        </Text>
-        <View
-          style={[
-            styles.badge,
-            { backgroundColor: colors.accent + "22" },
-          ]}
-        >
-          <Feather name="zap" size={12} color={colors.accent} />
-          <Text style={[styles.badgeText, { color: colors.accent }]}>
-            Powered by AI
-          </Text>
+    <View style={styles.container}>
+      <LinearGradient
+        colors={["#0D1E36", "#060E1C"]}
+        style={StyleSheet.absoluteFill}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+      />
+
+      <View style={[styles.header, { paddingTop: topPad + 10 }]}>
+        <Text style={styles.title}>AI Scan</Text>
+        <View style={styles.aiBadge}>
+          <Feather name="zap" size={11} color="#6B4CC0" />
+          <Text style={styles.aiBadgeText}>AI Powered</Text>
         </View>
       </View>
 
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomPad + 108 }]}
         showsVerticalScrollIndicator={false}
       >
         {!imageUri && !loading && (
           <View style={styles.uploadSection}>
-            <View
-              style={[
-                styles.uploadBox,
-                { borderColor: colors.border, backgroundColor: colors.card },
-              ]}
-            >
+            <View style={styles.uploadBox}>
               {Platform.OS !== "web" ? (
                 <LottieView
                   ref={lottieRef}
@@ -186,72 +145,43 @@ export default function ScanScreen() {
                   style={styles.uploadLottie}
                 />
               ) : (
-                <View style={styles.uploadLottie}>
-                  <Feather name="upload" size={48} color={colors.mutedForeground} />
+                <View style={[styles.uploadLottie, styles.uploadLottieCenter]}>
+                  <Feather name="upload-cloud" size={52} color="rgba(255,255,255,0.15)" />
                 </View>
               )}
-              <Text style={[styles.uploadTitle, { color: colors.foreground }]}>
-                Upload LR Photo
-              </Text>
-              <Text
-                style={[styles.uploadSubtitle, { color: colors.mutedForeground }]}
-              >
-                AI will extract route, consignment number, and invoice numbers
+              <Text style={styles.uploadTitle}>Upload LR Photo</Text>
+              <Text style={styles.uploadSub}>
+                AI extracts route, consignment & invoice numbers automatically
               </Text>
             </View>
 
-            <View style={styles.pickOptions}>
-              <TouchableOpacity
-                style={[
-                  styles.pickBtn,
-                  { backgroundColor: colors.card, borderColor: colors.border },
-                ]}
+            <View style={styles.pickRow}>
+              <PickButton
+                gradient={["#D4A843", "#A8782E"]}
+                icon="image"
+                iconColor="#0A1628"
+                label="Gallery"
                 onPress={() => pickImage(false)}
-                activeOpacity={0.8}
-              >
-                <LinearGradient
-                  colors={["#D4A843", "#A8782E"]}
-                  style={styles.pickIcon}
-                >
-                  <Feather name="image" size={20} color="#0A1628" />
-                </LinearGradient>
-                <Text style={[styles.pickLabel, { color: colors.foreground }]}>
-                  Gallery
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[
-                  styles.pickBtn,
-                  { backgroundColor: colors.card, borderColor: colors.border },
-                ]}
+              />
+              <PickButton
+                gradient={["#5A3DB5", "#3D2880"]}
+                icon="camera"
+                iconColor="#fff"
+                label="Camera"
                 onPress={() => pickImage(true)}
-                activeOpacity={0.8}
-              >
-                <LinearGradient
-                  colors={["#6B4CC0", "#4A2E9A"]}
-                  style={styles.pickIcon}
-                >
-                  <Feather name="camera" size={20} color="#FFFFFF" />
-                </LinearGradient>
-                <Text style={[styles.pickLabel, { color: colors.foreground }]}>
-                  Camera
-                </Text>
-              </TouchableOpacity>
+              />
             </View>
 
             {!settings.openrouterApiKey && (
               <TouchableOpacity
-                style={[
-                  styles.apiKeyWarning,
-                  { backgroundColor: colors.card, borderColor: "#D4A843" },
-                ]}
+                style={styles.apiWarning}
                 onPress={() => router.push("/(tabs)/settings")}
               >
-                <Feather name="alert-circle" size={16} color="#D4A843" />
-                <Text style={styles.apiKeyText}>
+                <Feather name="alert-triangle" size={14} color="#D4A843" />
+                <Text style={styles.apiWarningText}>
                   No API key — tap to configure in Settings
                 </Text>
+                <Feather name="chevron-right" size={14} color="rgba(212,168,67,0.5)" />
               </TouchableOpacity>
             )}
           </View>
@@ -267,22 +197,16 @@ export default function ScanScreen() {
                 style={styles.loadingLottie}
               />
             ) : (
-              <View style={styles.loadingLottie}>
-                <Feather name="loader" size={48} color={colors.mutedForeground} />
+              <View style={[styles.loadingLottie, styles.uploadLottieCenter]}>
+                <Feather name="loader" size={52} color="rgba(255,255,255,0.15)" />
               </View>
             )}
-            <Text style={[styles.loadingTitle, { color: colors.foreground }]}>
-              Analyzing Image...
-            </Text>
-            <Text
-              style={[styles.loadingSubtitle, { color: colors.mutedForeground }]}
-            >
-              AI is extracting LR details
-            </Text>
+            <Text style={styles.loadingTitle}>Analysing…</Text>
+            <Text style={styles.loadingSub}>AI is reading the LR document</Text>
             {imageUri && (
               <Image
                 source={{ uri: imageUri }}
-                style={[styles.previewThumb, { borderColor: colors.border }]}
+                style={styles.previewThumb}
                 resizeMode="cover"
               />
             )}
@@ -291,57 +215,29 @@ export default function ScanScreen() {
 
         {!loading && imageUri && extracted && (
           <View style={styles.resultSection}>
-            <Image
-              source={{ uri: imageUri }}
-              style={[styles.previewImage, { borderColor: colors.border }]}
-              resizeMode="contain"
-            />
+            <Image source={{ uri: imageUri }} style={styles.previewImage} resizeMode="contain" />
 
-            <View
-              style={[
-                styles.resultCard,
-                { backgroundColor: colors.card, borderColor: colors.border },
-              ]}
-            >
+            <View style={styles.resultCard}>
               <View style={styles.resultHeader}>
-                <Feather name="check-circle" size={18} color={colors.success ?? "#2D9E6E"} />
-                <Text style={[styles.resultTitle, { color: colors.foreground }]}>
-                  Extraction Complete
-                </Text>
+                <View style={styles.successDot}>
+                  <Feather name="check" size={12} color="#1E8C5E" />
+                </View>
+                <Text style={styles.resultTitle}>Extraction Complete</Text>
               </View>
 
               <View style={styles.field}>
-                <Text style={[styles.fieldLabel, { color: colors.mutedForeground }]}>
-                  Route
-                </Text>
-                <View style={styles.routePicker}>
+                <Text style={styles.fieldLabel}>Route</Text>
+                <View style={styles.routeRow}>
                   {["Chennai → Manesar", "Manesar → Chennai"].map((r) => (
                     <TouchableOpacity
                       key={r}
                       style={[
                         styles.routeOption,
-                        {
-                          backgroundColor:
-                            editedRoute === r
-                              ? colors.gold ?? colors.primary
-                              : colors.muted,
-                          borderColor:
-                            editedRoute === r
-                              ? colors.gold ?? colors.primary
-                              : colors.border,
-                        },
+                        editedRoute === r && styles.routeOptionActive,
                       ]}
                       onPress={() => setEditedRoute(r)}
                     >
-                      <Text
-                        style={[
-                          styles.routeOptionText,
-                          {
-                            color:
-                              editedRoute === r ? "#0A1628" : colors.mutedForeground,
-                          },
-                        ]}
-                      >
+                      <Text style={[styles.routeOptionText, editedRoute === r && styles.routeOptionTextActive]}>
                         {r}
                       </Text>
                     </TouchableOpacity>
@@ -350,68 +246,35 @@ export default function ScanScreen() {
               </View>
 
               <View style={styles.field}>
-                <Text style={[styles.fieldLabel, { color: colors.mutedForeground }]}>
-                  Consignment No
-                </Text>
+                <Text style={styles.fieldLabel}>Consignment No.</Text>
                 <TextInput
-                  style={[
-                    styles.input,
-                    {
-                      backgroundColor: colors.muted,
-                      borderColor: colors.border,
-                      color: colors.foreground,
-                    },
-                  ]}
+                  style={styles.input}
                   value={editedConsignment}
                   onChangeText={setEditedConsignment}
                   placeholder="Consignment number"
-                  placeholderTextColor={colors.mutedForeground}
+                  placeholderTextColor="rgba(255,255,255,0.2)"
                 />
               </View>
 
               <View style={styles.field}>
-                <Text style={[styles.fieldLabel, { color: colors.mutedForeground }]}>
-                  Invoice Numbers (comma separated)
-                </Text>
+                <Text style={styles.fieldLabel}>Invoice Numbers</Text>
                 <TextInput
-                  style={[
-                    styles.input,
-                    {
-                      backgroundColor: colors.muted,
-                      borderColor: colors.border,
-                      color: colors.foreground,
-                    },
-                  ]}
+                  style={styles.input}
                   value={editedInvoices}
                   onChangeText={setEditedInvoices}
-                  placeholder="e.g. TN2026000911-16, TN2026000912-17"
-                  placeholderTextColor={colors.mutedForeground}
+                  placeholder="Comma separated"
+                  placeholderTextColor="rgba(255,255,255,0.2)"
                   multiline
                 />
               </View>
             </View>
 
             <View style={styles.resultActions}>
-              <TouchableOpacity
-                style={[
-                  styles.resetBtn,
-                  { borderColor: colors.border, backgroundColor: colors.card },
-                ]}
-                onPress={reset}
-              >
-                <Text style={[styles.resetText, { color: colors.mutedForeground }]}>
-                  Reset
-                </Text>
+              <TouchableOpacity style={styles.resetBtn} onPress={reset}>
+                <Text style={styles.resetText}>Reset</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.fillBtn}
-                onPress={handleFillForm}
-                activeOpacity={0.85}
-              >
-                <LinearGradient
-                  colors={["#D4A843", "#A8782E"]}
-                  style={styles.fillBtnGradient}
-                >
+              <TouchableOpacity style={styles.fillBtn} onPress={handleFillForm} activeOpacity={0.85}>
+                <LinearGradient colors={["#D4A843", "#A8782E"]} style={styles.fillBtnGrad}>
                   <Feather name="edit-3" size={16} color="#0A1628" />
                   <Text style={styles.fillBtnText}>Fill Form</Text>
                 </LinearGradient>
@@ -424,153 +287,173 @@ export default function ScanScreen() {
   );
 }
 
+function PickButton({
+  gradient, icon, iconColor, label, onPress,
+}: {
+  gradient: [string, string];
+  icon: React.ComponentProps<typeof Feather>["name"];
+  iconColor: string;
+  label: string;
+  onPress: () => void;
+}) {
+  return (
+    <TouchableOpacity style={styles.pickBtn} onPress={onPress} activeOpacity={0.75}>
+      <LinearGradient colors={gradient} style={styles.pickIcon}>
+        <Feather name={icon} size={20} color={iconColor} />
+      </LinearGradient>
+      <Text style={styles.pickLabel}>{label}</Text>
+    </TouchableOpacity>
+  );
+}
+
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, backgroundColor: "#060E1C" },
   header: {
+    paddingHorizontal: 20,
+    paddingBottom: 12,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingBottom: 14,
-    borderBottomWidth: 1,
   },
-  title: { fontSize: 22, fontFamily: "Inter_700Bold" },
-  badge: {
+  title: {
+    fontSize: 30,
+    fontFamily: "Inter_700Bold",
+    color: "#FFFFFF",
+    letterSpacing: -0.5,
+  },
+  aiBadge: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: 5,
+    backgroundColor: "rgba(107,76,192,0.15)",
     borderRadius: 10,
     paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingVertical: 5,
+    borderWidth: 1,
+    borderColor: "rgba(107,76,192,0.3)",
   },
-  badgeText: { fontSize: 11, fontFamily: "Inter_500Medium" },
+  aiBadgeText: { fontSize: 11, fontFamily: "Inter_600SemiBold", color: "#8B6FD4" },
   scroll: { flex: 1 },
-  scrollContent: { padding: 16, paddingBottom: 100 },
-  uploadSection: { gap: 16 },
+  scrollContent: { padding: 20 },
+  uploadSection: { gap: 14 },
   uploadBox: {
-    borderRadius: 16,
-    borderWidth: 2,
+    borderRadius: 24,
+    borderWidth: 1.5,
     borderStyle: "dashed",
+    borderColor: "rgba(255,255,255,0.1)",
+    backgroundColor: "rgba(255,255,255,0.03)",
     alignItems: "center",
-    padding: 32,
-    gap: 12,
+    padding: 36,
+    gap: 10,
   },
-  uploadLottie: { width: 150, height: 120, alignItems: "center", justifyContent: "center" },
-  uploadTitle: { fontSize: 18, fontFamily: "Inter_600SemiBold" },
-  uploadSubtitle: {
+  uploadLottie: { width: 150, height: 120 },
+  uploadLottieCenter: { alignItems: "center", justifyContent: "center" },
+  uploadTitle: { fontSize: 17, fontFamily: "Inter_600SemiBold", color: "#FFFFFF" },
+  uploadSub: {
     fontSize: 13,
     fontFamily: "Inter_400Regular",
+    color: "rgba(255,255,255,0.3)",
     textAlign: "center",
-    lineHeight: 20,
+    lineHeight: 19,
   },
-  pickOptions: { flexDirection: "row", gap: 12 },
+  pickRow: { flexDirection: "row", gap: 12 },
   pickBtn: {
     flex: 1,
-    borderRadius: 14,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderRadius: 20,
     borderWidth: 1,
-    padding: 16,
+    borderColor: "rgba(255,255,255,0.08)",
+    padding: 18,
     alignItems: "center",
     gap: 10,
   },
-  pickIcon: {
-    width: 48,
-    height: 48,
+  pickIcon: { width: 52, height: 52, borderRadius: 16, alignItems: "center", justifyContent: "center" },
+  pickLabel: { fontSize: 14, fontFamily: "Inter_600SemiBold", color: "#FFFFFF" },
+  apiWarning: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: "rgba(212,168,67,0.07)",
     borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: "rgba(212,168,67,0.2)",
+  },
+  apiWarningText: { flex: 1, fontSize: 12, fontFamily: "Inter_400Regular", color: "rgba(212,168,67,0.8)" },
+  loadingSection: { alignItems: "center", gap: 14, paddingVertical: 40 },
+  loadingLottie: { width: 160, height: 160 },
+  loadingTitle: { fontSize: 20, fontFamily: "Inter_600SemiBold", color: "#FFFFFF" },
+  loadingSub: { fontSize: 13, fontFamily: "Inter_400Regular", color: "rgba(255,255,255,0.35)" },
+  previewThumb: { width: 120, height: 80, borderRadius: 12, borderWidth: 1, borderColor: "rgba(255,255,255,0.1)", marginTop: 8 },
+  resultSection: { gap: 16 },
+  previewImage: { width: "100%", height: 200, borderRadius: 18, borderWidth: 1, borderColor: "rgba(255,255,255,0.08)" },
+  resultCard: {
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.09)",
+    padding: 18,
+    gap: 16,
+  },
+  resultHeader: { flexDirection: "row", alignItems: "center", gap: 10 },
+  successDot: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "rgba(30,140,94,0.2)",
     alignItems: "center",
     justifyContent: "center",
   },
-  pickLabel: { fontSize: 14, fontFamily: "Inter_600SemiBold" },
-  apiKeyWarning: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 12,
-    padding: 12,
-    borderWidth: 1,
-    gap: 8,
-  },
-  apiKeyText: {
-    fontSize: 12,
-    fontFamily: "Inter_400Regular",
-    color: "#D4A843",
-    flex: 1,
-  },
-  loadingSection: { alignItems: "center", gap: 16, paddingVertical: 40 },
-  loadingLottie: { width: 160, height: 160, alignItems: "center", justifyContent: "center" },
-  loadingTitle: { fontSize: 20, fontFamily: "Inter_600SemiBold" },
-  loadingSubtitle: { fontSize: 13, fontFamily: "Inter_400Regular" },
-  previewThumb: {
-    width: 120,
-    height: 80,
-    borderRadius: 10,
-    borderWidth: 1,
-    marginTop: 8,
-  },
-  resultSection: { gap: 16 },
-  previewImage: {
-    width: "100%",
-    height: 200,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  resultCard: {
-    borderRadius: 14,
-    borderWidth: 1,
-    padding: 16,
-    gap: 14,
-  },
-  resultHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginBottom: 4,
-  },
-  resultTitle: { fontSize: 16, fontFamily: "Inter_600SemiBold" },
-  field: { gap: 6 },
+  resultTitle: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#FFFFFF" },
+  field: { gap: 7 },
   fieldLabel: {
-    fontSize: 11,
-    fontFamily: "Inter_500Medium",
+    fontSize: 10,
+    fontFamily: "Inter_600SemiBold",
+    color: "rgba(255,255,255,0.3)",
+    letterSpacing: 1.5,
     textTransform: "uppercase",
-    letterSpacing: 0.5,
   },
-  routePicker: { flexDirection: "row", gap: 8 },
-  routeOption: {
-    flex: 1,
-    borderRadius: 8,
-    borderWidth: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    alignItems: "center",
-  },
-  routeOptionText: { fontSize: 11, fontFamily: "Inter_500Medium", textAlign: "center" },
   input: {
-    borderRadius: 8,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderRadius: 12,
     borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    borderColor: "rgba(255,255,255,0.08)",
+    paddingHorizontal: 14,
+    paddingVertical: 11,
     fontSize: 13,
     fontFamily: "Inter_400Regular",
+    color: "#FFFFFF",
   },
+  routeRow: { flexDirection: "row", gap: 8 },
+  routeOption: {
+    flex: 1,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+    backgroundColor: "rgba(255,255,255,0.04)",
+    paddingVertical: 9,
+    paddingHorizontal: 8,
+    alignItems: "center",
+  },
+  routeOptionActive: {
+    backgroundColor: "rgba(212,168,67,0.15)",
+    borderColor: "rgba(212,168,67,0.35)",
+  },
+  routeOptionText: { fontSize: 11, fontFamily: "Inter_500Medium", color: "rgba(255,255,255,0.4)", textAlign: "center" },
+  routeOptionTextActive: { color: "#D4A843" },
   resultActions: { flexDirection: "row", gap: 12 },
   resetBtn: {
     flex: 1,
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
     paddingVertical: 14,
     alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: "rgba(255,255,255,0.04)",
   },
-  resetText: { fontSize: 14, fontFamily: "Inter_500Medium" },
-  fillBtn: { flex: 2, borderRadius: 12, overflow: "hidden" },
-  fillBtnGradient: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    paddingVertical: 14,
-  },
-  fillBtnText: {
-    fontSize: 15,
-    fontFamily: "Inter_700Bold",
-    color: "#0A1628",
-  },
+  resetText: { fontSize: 14, fontFamily: "Inter_500Medium", color: "rgba(255,255,255,0.5)" },
+  fillBtn: { flex: 2, borderRadius: 14, overflow: "hidden" },
+  fillBtnGrad: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 14 },
+  fillBtnText: { fontSize: 15, fontFamily: "Inter_700Bold", color: "#0A1628" },
 });

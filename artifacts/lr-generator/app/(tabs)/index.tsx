@@ -17,10 +17,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { StatCard } from "@/components/StatCard";
 import { useLR, ROUTES } from "@/context/LRContext";
-import { useColors } from "@/hooks/useColors";
 
 export default function HomeScreen() {
-  const colors = useColors();
   const insets = useSafeAreaInsets();
   const { lrs } = useLR();
   const lottieRef = useRef<LottieView>(null);
@@ -36,65 +34,58 @@ export default function HomeScreen() {
   });
 
   const chennaiCount = lrs.filter((lr) => lr.routeId === 1).length;
-  const maneserCount = lrs.filter((lr) => lr.routeId === 2).length;
-
   const recentLRs = lrs.slice(0, 3);
 
-  const topPad = Platform.OS === "web" ? 67 : insets.top;
+  const topPad = Platform.OS === "web" ? 52 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={styles.container}>
       <LinearGradient
-        colors={["#0A1628", "#112138", "#0A1628"]}
-        style={[styles.header, { paddingTop: topPad + 8 }]}
+        colors={["#0D1E36", "#060E1C"]}
+        style={StyleSheet.absoluteFill}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+      />
+      <View style={[styles.glowOrb, { pointerEvents: "none" }]} />
+
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingTop: topPad + 12, paddingBottom: bottomPad + 108 },
+        ]}
+        showsVerticalScrollIndicator={false}
       >
-        <View style={styles.headerContent}>
-          <View style={styles.logoRow}>
+        <View style={styles.headerRow}>
+          <View style={styles.brandRow}>
             <Image
               source={require("@/assets/logo/maha_laxmi.png")}
               style={styles.logo}
               resizeMode="contain"
             />
-            <View style={styles.companyInfo}>
-              <Text style={styles.companyName}>MAHA LAXMI</Text>
-              <Text style={styles.companySubtitle}>TRANSPORT CO.</Text>
-              <Text style={styles.appTagline}>LR Generator</Text>
+            <View style={styles.brandText}>
+              <Text style={styles.brandName}>MAHA LAXMI</Text>
+              <Text style={styles.brandSub}>TRANSPORT CO.</Text>
             </View>
           </View>
           <TouchableOpacity
             onPress={() => router.push("/(tabs)/settings")}
             style={styles.settingsBtn}
           >
-            <Feather name="settings" size={20} color="#D4A843" />
+            <Feather name="sliders" size={18} color="rgba(255,255,255,0.7)" />
           </TouchableOpacity>
         </View>
-
-        <View style={styles.divider} />
 
         <View style={styles.statsRow}>
           <StatCard label="Total LRs" value={lrs.length} icon="file-text" />
           <View style={{ width: 10 }} />
-          <StatCard
-            label="This Month"
-            value={thisMonth.length}
-            icon="calendar"
-            highlight
-          />
+          <StatCard label="This Month" value={thisMonth.length} icon="calendar" highlight />
           <View style={{ width: 10 }} />
           <StatCard label="Chennai→" value={chennaiCount} icon="arrow-right" />
         </View>
-      </LinearGradient>
 
-      <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={[
-          styles.scrollContent,
-          { paddingBottom: bottomPad + 80 },
-        ]}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.animationContainer}>
+        <View style={styles.heroContainer}>
           {Platform.OS !== "web" ? (
             <LottieView
               ref={lottieRef}
@@ -104,121 +95,77 @@ export default function HomeScreen() {
               style={styles.lottie}
             />
           ) : (
-            <View style={[styles.lottie, { alignItems: "center", justifyContent: "center" }]}>
-              <Feather name="truck" size={64} color="#D4A843" />
+            <View style={[styles.lottie, styles.webHero]}>
+              <Feather name="truck" size={72} color="rgba(212,168,67,0.35)" />
             </View>
           )}
         </View>
 
-        <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>
-          QUICK ACTIONS
-        </Text>
+        <Text style={styles.sectionLabel}>QUICK ACTIONS</Text>
 
         <View style={styles.actionsRow}>
-          <TouchableOpacity
-            style={[styles.actionCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+          <ActionCard
+            gradient={["#D4A843", "#A8782E"]}
+            icon="plus"
+            iconColor="#0A1628"
+            title="Create LR"
+            sub="Manual entry"
             onPress={() => {
               if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               router.push("/create-lr");
             }}
-            activeOpacity={0.8}
-          >
-            <LinearGradient
-              colors={["#D4A843", "#A8782E"]}
-              style={styles.actionIconBox}
-            >
-              <Feather name="plus" size={24} color="#0A1628" />
-            </LinearGradient>
-            <Text style={[styles.actionTitle, { color: colors.foreground }]}>
-              Create LR
-            </Text>
-            <Text style={[styles.actionSubtitle, { color: colors.mutedForeground }]}>
-              Manual entry
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.actionCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+          />
+          <ActionCard
+            gradient={["#5A3DB5", "#3D2880"]}
+            icon="camera"
+            iconColor="#fff"
+            title="Scan LR"
+            sub="AI extraction"
             onPress={() => {
               if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               router.push("/(tabs)/scan");
             }}
-            activeOpacity={0.8}
-          >
-            <LinearGradient
-              colors={["#6B4CC0", "#4A2E9A"]}
-              style={styles.actionIconBox}
-            >
-              <Feather name="camera" size={24} color="#FFFFFF" />
-            </LinearGradient>
-            <Text style={[styles.actionTitle, { color: colors.foreground }]}>
-              Scan LR
-            </Text>
-            <Text style={[styles.actionSubtitle, { color: colors.mutedForeground }]}>
-              AI extraction
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.actionCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+          />
+          <ActionCard
+            gradient={["#1E8C5E", "#156444"]}
+            icon="list"
+            iconColor="#fff"
+            title="All LRs"
+            sub="View records"
             onPress={() => {
               if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               router.push("/(tabs)/lrs");
             }}
-            activeOpacity={0.8}
-          >
-            <LinearGradient
-              colors={["#2D9E6E", "#1E6E4E"]}
-              style={styles.actionIconBox}
-            >
-              <Feather name="list" size={24} color="#FFFFFF" />
-            </LinearGradient>
-            <Text style={[styles.actionTitle, { color: colors.foreground }]}>
-              All LRs
-            </Text>
-            <Text style={[styles.actionSubtitle, { color: colors.mutedForeground }]}>
-              View records
-            </Text>
-          </TouchableOpacity>
+          />
         </View>
 
         {recentLRs.length > 0 && (
           <>
             <View style={styles.recentHeader}>
-              <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>
-                RECENT LRs
-              </Text>
+              <Text style={styles.sectionLabel}>RECENT LRs</Text>
               <TouchableOpacity onPress={() => router.push("/(tabs)/lrs")}>
-                <Text style={[styles.viewAll, { color: colors.gold ?? colors.primary }]}>
-                  View All
-                </Text>
+                <Text style={styles.viewAll}>See All</Text>
               </TouchableOpacity>
             </View>
 
             {recentLRs.map((lr) => (
               <TouchableOpacity
                 key={lr.id}
-                style={[styles.recentCard, { backgroundColor: colors.card, borderColor: colors.border }]}
+                style={styles.recentCard}
                 onPress={() => router.push(`/lr-detail/${lr.id}`)}
-                activeOpacity={0.8}
+                activeOpacity={0.75}
               >
                 <View style={styles.recentLeft}>
-                  <Text style={[styles.recentLrNo, { color: colors.gold ?? colors.primary }]}>
-                    {lr.lrNo}
-                  </Text>
-                  <Text style={[styles.recentRoute, { color: colors.mutedForeground }]}>
-                    {ROUTES[lr.routeId].name}
-                  </Text>
+                  <Text style={styles.recentLrNo}>{lr.lrNo}</Text>
+                  <Text style={styles.recentRoute}>{ROUTES[lr.routeId].name}</Text>
                 </View>
                 <View style={styles.recentRight}>
-                  <Text style={[styles.recentFreight, { color: colors.foreground }]}>
+                  <Text style={styles.recentFreight}>
                     ₹{lr.frightCharge.toLocaleString("en-IN")}
                   </Text>
-                  <Text style={[styles.recentDate, { color: colors.mutedForeground }]}>
-                    {lr.date}
-                  </Text>
+                  <Text style={styles.recentDate}>{lr.date}</Text>
                 </View>
-                <Feather name="chevron-right" size={16} color={colors.mutedForeground} />
+                <Feather name="chevron-right" size={15} color="rgba(212,168,67,0.4)" style={{ marginLeft: 4 }} />
               </TouchableOpacity>
             ))}
           </>
@@ -226,10 +173,8 @@ export default function HomeScreen() {
 
         {lrs.length === 0 && (
           <View style={styles.emptyContainer}>
-            <Feather name="file-text" size={40} color={colors.mutedForeground} />
-            <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
-              No LRs yet. Create your first one!
-            </Text>
+            <Feather name="file-text" size={36} color="rgba(255,255,255,0.12)" />
+            <Text style={styles.emptyText}>No LRs yet. Create your first one!</Text>
           </View>
         )}
       </ScrollView>
@@ -237,135 +182,174 @@ export default function HomeScreen() {
   );
 }
 
+function ActionCard({
+  gradient,
+  icon,
+  iconColor,
+  title,
+  sub,
+  onPress,
+}: {
+  gradient: [string, string];
+  icon: React.ComponentProps<typeof Feather>["name"];
+  iconColor: string;
+  title: string;
+  sub: string;
+  onPress: () => void;
+}) {
+  return (
+    <TouchableOpacity style={styles.actionCard} onPress={onPress} activeOpacity={0.75}>
+      <LinearGradient colors={gradient} style={styles.actionIconBox}>
+        <Feather name={icon} size={22} color={iconColor} />
+      </LinearGradient>
+      <Text style={styles.actionTitle}>{title}</Text>
+      <Text style={styles.actionSub}>{sub}</Text>
+    </TouchableOpacity>
+  );
+}
+
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  header: {
-    paddingHorizontal: 16,
-    paddingBottom: 16,
+  container: { flex: 1, backgroundColor: "#060E1C" },
+  glowOrb: {
+    position: "absolute",
+    top: -60,
+    right: -60,
+    width: 260,
+    height: 260,
+    borderRadius: 130,
+    backgroundColor: "rgba(212,168,67,0.05)",
   },
-  headerContent: {
+  scroll: { flex: 1 },
+  scrollContent: { paddingHorizontal: 20 },
+
+  headerRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 14,
+    marginBottom: 24,
   },
-  logoRow: { flexDirection: "row", alignItems: "center", gap: 10 },
-  logo: { width: 48, height: 48, borderRadius: 24 },
-  companyInfo: { gap: 1 },
-  companyName: {
-    fontSize: 16,
+  brandRow: { flexDirection: "row", alignItems: "center", gap: 11 },
+  logo: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 1.5,
+    borderColor: "rgba(212,168,67,0.3)",
+  },
+  brandText: { gap: 1 },
+  brandName: {
+    fontSize: 15,
     fontFamily: "Inter_700Bold",
     color: "#D4A843",
-    letterSpacing: 2,
+    letterSpacing: 2.5,
   },
-  companySubtitle: {
-    fontSize: 11,
+  brandSub: {
+    fontSize: 9,
     fontFamily: "Inter_500Medium",
-    color: "#8094AB",
-    letterSpacing: 2,
-  },
-  appTagline: {
-    fontSize: 10,
-    fontFamily: "Inter_400Regular",
-    color: "#6B7280",
-    marginTop: 2,
+    color: "rgba(255,255,255,0.35)",
+    letterSpacing: 2.5,
   },
   settingsBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: "rgba(212,168,67,0.1)",
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: "rgba(255,255,255,0.06)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
     alignItems: "center",
     justifyContent: "center",
   },
-  divider: {
-    height: 1,
-    backgroundColor: "#1E3550",
-    marginBottom: 14,
-  },
-  statsRow: { flexDirection: "row" },
-  scroll: { flex: 1 },
-  scrollContent: { padding: 16 },
-  animationContainer: {
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  lottie: { width: 200, height: 130 },
-  sectionTitle: {
-    fontSize: 11,
+
+  statsRow: { flexDirection: "row", marginBottom: 4 },
+
+  heroContainer: { alignItems: "center", marginVertical: 8 },
+  lottie: { width: 220, height: 140 },
+  webHero: { alignItems: "center", justifyContent: "center" },
+
+  sectionLabel: {
+    fontSize: 10,
     fontFamily: "Inter_600SemiBold",
-    letterSpacing: 1.5,
+    color: "rgba(255,255,255,0.3)",
+    letterSpacing: 2,
+    textTransform: "uppercase",
     marginBottom: 12,
-    marginTop: 4,
+    marginTop: 8,
   },
-  actionsRow: {
-    flexDirection: "row",
-    gap: 10,
-    marginBottom: 24,
-  },
+  actionsRow: { flexDirection: "row", gap: 10, marginBottom: 32 },
   actionCard: {
     flex: 1,
-    borderRadius: 14,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderRadius: 20,
     padding: 14,
     alignItems: "center",
     gap: 8,
     borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
   },
   actionIconBox: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
+    width: 50,
+    height: 50,
+    borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
   },
   actionTitle: {
-    fontSize: 13,
+    fontSize: 12.5,
     fontFamily: "Inter_600SemiBold",
+    color: "#FFFFFF",
     textAlign: "center",
   },
-  actionSubtitle: {
+  actionSub: {
     fontSize: 10,
     fontFamily: "Inter_400Regular",
+    color: "rgba(255,255,255,0.35)",
     textAlign: "center",
   },
+
   recentHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 10,
   },
   viewAll: {
-    fontSize: 13,
+    fontSize: 12,
     fontFamily: "Inter_500Medium",
+    color: "#D4A843",
   },
   recentCard: {
     flexDirection: "row",
     alignItems: "center",
-    borderRadius: 12,
-    padding: 14,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 13,
     marginBottom: 8,
     borderWidth: 1,
-    gap: 10,
+    borderColor: "rgba(255,255,255,0.07)",
+    gap: 8,
   },
-  recentLeft: { flex: 1 },
+  recentLeft: { flex: 1, gap: 3 },
   recentLrNo: {
-    fontSize: 15,
+    fontSize: 14,
     fontFamily: "Inter_700Bold",
+    color: "#D4A843",
   },
   recentRoute: {
     fontSize: 11,
     fontFamily: "Inter_400Regular",
-    marginTop: 2,
+    color: "rgba(255,255,255,0.35)",
   },
-  recentRight: { alignItems: "flex-end" },
+  recentRight: { alignItems: "flex-end", gap: 3 },
   recentFreight: {
     fontSize: 14,
     fontFamily: "Inter_600SemiBold",
+    color: "#FFFFFF",
   },
   recentDate: {
-    fontSize: 11,
+    fontSize: 10,
     fontFamily: "Inter_400Regular",
-    marginTop: 2,
+    color: "rgba(255,255,255,0.3)",
   },
   emptyContainer: {
     alignItems: "center",
@@ -373,8 +357,9 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   emptyText: {
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: "Inter_400Regular",
+    color: "rgba(255,255,255,0.25)",
     textAlign: "center",
   },
 });

@@ -342,7 +342,7 @@ export default function Settings() {
               style={{
                 padding: "8px 16px",
                 fontSize: "13px",
-                color: biometricEnabled ? "#0A1628" : "",
+                color: biometricEnabled ? "#FFFFFF" : "",
               }}
             >
               {biometricEnabled ? "Enabled" : "Enable"}

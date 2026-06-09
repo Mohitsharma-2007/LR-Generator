@@ -47,7 +47,7 @@ export function LRCard({ lr, onDelete, onShare }: LRCardProps) {
             style={{
               fontSize: "17px",
               fontWeight: 700,
-              color: "var(--gold)",
+              color: "var(--gold-dark)",
               letterSpacing: "0.3px",
               fontFamily: "var(--font-outfit)",
             }}
@@ -59,7 +59,7 @@ export function LRCard({ lr, onDelete, onShare }: LRCardProps) {
               display: "flex",
               alignItems: "center",
               gap: "4px",
-              backgroundColor: "rgba(255, 255, 255, 0.06)",
+              backgroundColor: "var(--card-border)",
               borderRadius: "6px",
               padding: "3px 8px",
               fontSize: "10px",
@@ -80,7 +80,7 @@ export function LRCard({ lr, onDelete, onShare }: LRCardProps) {
             gap: "3px",
           }}
         >
-          <span style={{ fontSize: "16px", fontWeight: 700, color: "#FFFFFF" }}>
+          <span style={{ fontSize: "16px", fontWeight: 700, color: "var(--text-primary)" }}>
             ₹{lr.frightCharge.toLocaleString("en-IN")}
           </span>
           <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
@@ -90,7 +90,7 @@ export function LRCard({ lr, onDelete, onShare }: LRCardProps) {
       </div>
 
       <div
-        style={{ height: "1px", backgroundColor: "rgba(255, 255, 255, 0.07)" }}
+        style={{ height: "1px", backgroundColor: "var(--card-border)" }}
       />
 
       <div
@@ -122,8 +122,8 @@ export function LRCard({ lr, onDelete, onShare }: LRCardProps) {
             style={{
               padding: "6px",
               borderRadius: "8px",
-              background: "rgba(255, 255, 255, 0.05)",
-              border: "none",
+              background: "var(--bg-dark)",
+              border: "1px solid var(--card-border)",
               color: "var(--text-secondary)",
               cursor: "pointer",
               display: "flex",
@@ -138,8 +138,8 @@ export function LRCard({ lr, onDelete, onShare }: LRCardProps) {
             style={{
               padding: "6px",
               borderRadius: "8px",
-              background: "rgba(255, 255, 255, 0.05)",
-              border: "none",
+              background: "var(--bg-dark)",
+              border: "1px solid var(--card-border)",
               color: "var(--text-secondary)",
               cursor: "pointer",
               display: "flex",
@@ -154,9 +154,9 @@ export function LRCard({ lr, onDelete, onShare }: LRCardProps) {
             style={{
               padding: "6px",
               borderRadius: "8px",
-              background: "rgba(255, 255, 255, 0.05)",
-              border: "none",
-              color: "rgba(214, 61, 61, 0.7)",
+              background: "var(--bg-dark)",
+              border: "1px solid var(--card-border)",
+              color: "var(--error)",
               cursor: "pointer",
               display: "flex",
             }}
@@ -166,7 +166,7 @@ export function LRCard({ lr, onDelete, onShare }: LRCardProps) {
           </button>
           <Icons.ChevronRight
             size={14}
-            style={{ color: "rgba(212, 168, 67, 0.5)", marginLeft: "4px" }}
+            style={{ color: "var(--gold)", marginLeft: "4px" }}
           />
         </div>
       </div>

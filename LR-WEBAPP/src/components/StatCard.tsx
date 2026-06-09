@@ -14,7 +14,7 @@ export function StatCard({ label, value, icon, highlight }: StatCardProps) {
     <div
       style={{
         flex: 1,
-        borderRadius: "18px",
+        borderRadius: "12px",
         padding: "14px",
         display: "flex",
         flexDirection: "column",
@@ -22,9 +22,9 @@ export function StatCard({ label, value, icon, highlight }: StatCardProps) {
         border: "1px solid",
         gap: "5px",
         transition: "all 0.3s ease",
-        background: highlight ? "rgba(212, 168, 67, 0.18)" : "var(--card-bg)",
+        background: highlight ? "var(--gold-glow)" : "var(--card-bg)",
         borderColor: highlight
-          ? "rgba(212, 168, 67, 0.4)"
+          ? "var(--card-border-active)"
           : "var(--card-border)",
       }}
       className="glass-panel"
@@ -39,16 +39,15 @@ export function StatCard({ label, value, icon, highlight }: StatCardProps) {
           justifyContent: "center",
           marginBottom: "2px",
           background: highlight
-            ? "rgba(10, 22, 40, 0.25)"
-            : "rgba(212, 168, 67, 0.12)",
+            ? "var(--gold-glow)"
+            : "var(--bg-dark)",
         }}
       >
         {IconComponent && (
           <IconComponent
             size={16}
-            className={highlight ? "text-dark" : "text-gold"}
             style={{
-              color: highlight ? "#0A1628" : "#D4A843",
+              color: highlight ? "var(--gold-text)" : "var(--text-secondary)",
             }}
           />
         )}
@@ -58,7 +57,7 @@ export function StatCard({ label, value, icon, highlight }: StatCardProps) {
           fontSize: "22px",
           fontWeight: 700,
           fontFamily: "var(--font-outfit)",
-          color: highlight ? "#0A1628" : "#FFFFFF",
+          color: "var(--text-primary)",
         }}
       >
         {value}
@@ -70,7 +69,7 @@ export function StatCard({ label, value, icon, highlight }: StatCardProps) {
           textAlign: "center",
           letterSpacing: "0.8px",
           textTransform: "uppercase",
-          color: highlight ? "rgba(10, 22, 40, 0.65)" : "var(--text-muted)",
+          color: highlight ? "var(--gold-dark)" : "var(--text-muted)",
         }}
       >
         {label}

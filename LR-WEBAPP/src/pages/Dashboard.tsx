@@ -184,16 +184,16 @@ export default function Dashboard() {
               width: "44px",
               height: "44px",
               borderRadius: "14px",
-              background: "linear-gradient(135deg, #D4A843 0%, #A8782E 100%)",
+              background: "linear-gradient(135deg, #82A0BC 0%, #5C7D99 100%)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              color: "#0A1628",
+              color: "#FFFFFF",
             }}
           >
             <Icons.Plus size={20} />
           </div>
-          <span style={{ fontSize: "13px", fontWeight: 600, color: "#FFFFFF" }}>
+          <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-primary)" }}>
             Create LR
           </span>
           <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>
@@ -201,42 +201,6 @@ export default function Dashboard() {
           </span>
         </div>
 
-        {/* Scan Invoice */}
-        <div
-          onClick={() => setLocation("/scan")}
-          className="glass-panel"
-          style={{
-            flex: 1,
-            padding: "16px 12px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "8px",
-            cursor: "pointer",
-            textAlign: "center",
-          }}
-        >
-          <div
-            style={{
-              width: "44px",
-              height: "44px",
-              borderRadius: "14px",
-              background: "linear-gradient(135deg, #5A3DB5 0%, #3D2880 100%)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#FFFFFF",
-            }}
-          >
-            <Icons.Camera size={18} />
-          </div>
-          <span style={{ fontSize: "13px", fontWeight: 600, color: "#FFFFFF" }}>
-            Scan LR
-          </span>
-          <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>
-            AI extraction
-          </span>
-        </div>
 
         {/* All LRs */}
         <div
@@ -258,7 +222,7 @@ export default function Dashboard() {
               width: "44px",
               height: "44px",
               borderRadius: "14px",
-              background: "linear-gradient(135deg, #1E8C5E 0%, #156444 100%)",
+              background: "linear-gradient(135deg, #9FA8A3 0%, #7A8781 100%)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -267,7 +231,7 @@ export default function Dashboard() {
           >
             <Icons.List size={18} />
           </div>
-          <span style={{ fontSize: "13px", fontWeight: 600, color: "#FFFFFF" }}>
+          <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-primary)" }}>
             All LRs
           </span>
           <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>
@@ -363,7 +327,7 @@ export default function Dashboard() {
                   style={{
                     fontSize: "14px",
                     fontWeight: 600,
-                    color: "#FFFFFF",
+                    color: "var(--text-primary)",
                   }}
                 >
                   ₹{lr.frightCharge.toLocaleString("en-IN")}
@@ -394,7 +358,7 @@ export default function Dashboard() {
         >
           <Icons.FileText
             size={36}
-            style={{ color: "rgba(255,255,255,0.12)" }}
+            style={{ color: "rgba(0,0,0,0.12)" }}
           />
           <span
             style={{

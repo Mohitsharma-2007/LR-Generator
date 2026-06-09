@@ -42,7 +42,7 @@ export function InvoiceRow({
               height: "24px",
               borderRadius: "12px",
               background: "var(--gold)",
-              color: "#0A1628",
+              color: "#FFFFFF",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",

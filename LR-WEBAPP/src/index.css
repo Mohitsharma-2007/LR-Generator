@@ -1,17 +1,17 @@
 :root {
-  /* Apple Light System Colors */
-  --bg-dark: #F2F2F7;
-  --bg-dark-rgb: 242, 242, 247;
+  /* Apple Light System Colors -> Classy Elegant Theme */
+  --bg-dark: #FAF9F6; /* Cream White */
+  --bg-dark-rgb: 250, 249, 246;
   --bg-glow: #FFFFFF;
-  --gold: #007AFF; /* Using Blue for accents instead of gold */
-  --gold-dark: #0056b3;
-  --gold-glow: rgba(0, 122, 255, 0.15);
-  --gold-text: #007AFF;
+  --gold: #82A0BC; /* Classy Pastel Blue */
+  --gold-dark: #5C7D99;
+  --gold-glow: rgba(130, 160, 188, 0.15);
+  --gold-text: #5C7D99;
 
   --card-bg: rgba(255, 255, 255, 0.85);
   --card-bg-hover: rgba(255, 255, 255, 1);
-  --card-border: rgba(0, 0, 0, 0.05);
-  --card-border-active: rgba(0, 122, 255, 0.4);
+  --card-border: rgba(130, 160, 188, 0.2);
+  --card-border-active: rgba(130, 160, 188, 0.6);
 
   --text-primary: #000000;
   --text-secondary: rgba(0, 0, 0, 0.6);
@@ -25,10 +25,9 @@
   --whatsapp-bg: rgba(37, 211, 102, 0.12);
 
   --font-inter:
-    -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter",
-    sans-serif;
+    "Lato", -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter", sans-serif;
   --font-outfit:
-    -apple-system, BlinkMacSystemFont, "SF Pro Display", "Outfit", sans-serif;
+    "Playfair Display", -apple-system, BlinkMacSystemFont, "SF Pro Display", "Outfit", serif;
 }
 
 * {
@@ -69,8 +68,8 @@ body {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--card-border);
-  border-radius: 20px;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.04);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -89,7 +88,7 @@ body {
   background: var(--gold);
   color: #FFFFFF;
   border: none;
-  border-radius: 14px;
+  border-radius: 8px;
   padding: 14px 28px;
   font-family: var(--font-inter);
   font-weight: 700;
@@ -123,7 +122,7 @@ body {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
   color: var(--text-primary);
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 12px 24px;
   font-family: var(--font-inter);
   font-weight: 500;
@@ -145,7 +144,7 @@ body {
   background: var(--error-bg);
   border: 1px solid rgba(224, 92, 92, 0.2);
   color: var(--error);
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 12px 24px;
   font-family: var(--font-inter);
   font-weight: 600;
@@ -167,7 +166,7 @@ body {
   background: var(--whatsapp-bg);
   border: 1px solid rgba(37, 211, 102, 0.2);
   color: var(--whatsapp);
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 12px 24px;
   font-family: var(--font-inter);
   font-weight: 600;
@@ -190,7 +189,7 @@ body {
   width: 100%;
   background: #F9F9F9;
   border: 1px solid var(--card-border);
-  border-radius: 10px;
+  border-radius: 6px;
   padding: 12px 14px;
   font-family: var(--font-inter);
   font-size: 14px;
@@ -324,7 +323,7 @@ body {
 .modal-sheet {
   background: #FFFFFF;
   border: 1px solid var(--card-border);
-  border-radius: 24px;
+  border-radius: 16px;
   width: 100%;
   max-width: 500px;
   padding: 24px;

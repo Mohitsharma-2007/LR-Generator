@@ -161,7 +161,7 @@ export function LockScreen() {
             style={{
               fontSize: "10px",
               fontWeight: 500,
-              color: "rgba(212, 168, 67, 0.5)",
+              color: "var(--gold)",
               letterSpacing: "4px",
               marginTop: "4px",
               textTransform: "uppercase",
@@ -219,7 +219,7 @@ export function LockScreen() {
                     width: "13px",
                     height: "13px",
                     borderRadius: "50%",
-                    border: "1.5px solid rgba(212, 168, 67, 0.5)",
+                    border: "1.5px solid var(--gold)",
                     backgroundColor:
                       pin.length > i ? "var(--gold)" : "transparent",
                     transition:
@@ -253,9 +253,9 @@ export function LockScreen() {
                       width: "72px",
                       height: "72px",
                       borderRadius: "50%",
-                      backgroundColor: "rgba(255, 255, 255, 0.04)",
-                      border: "1px solid rgba(255, 255, 255, 0.07)",
-                      color: "#FFFFFF",
+                      backgroundColor: "var(--card-bg)",
+                      border: "1px solid var(--card-border)",
+                      color: "var(--text-primary)",
                       fontSize: "24px",
                       fontWeight: 500,
                       cursor: "pointer",
@@ -267,26 +267,26 @@ export function LockScreen() {
                     }}
                     onMouseDown={(e) => {
                       e.currentTarget.style.backgroundColor =
-                        "rgba(212, 168, 67, 0.15)";
+                        "var(--gold-glow)";
                       e.currentTarget.style.borderColor = "var(--gold)";
                     }}
                     onMouseUp={(e) => {
                       e.currentTarget.style.backgroundColor =
-                        "rgba(255, 255, 255, 0.04)";
+                        "var(--card-bg)";
                       e.currentTarget.style.borderColor =
-                        "rgba(255, 255, 255, 0.07)";
+                        "var(--card-border)";
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.backgroundColor =
-                        "rgba(255, 255, 255, 0.04)";
+                        "var(--card-bg)";
                       e.currentTarget.style.borderColor =
-                        "rgba(255, 255, 255, 0.07)";
+                        "var(--card-border)";
                     }}
                   >
                     {key === "DEL" ? (
                       <Icons.Delete
                         size={20}
-                        style={{ color: "rgba(212, 168, 67, 0.7)" }}
+                        style={{ color: "var(--gold-dark)" }}
                       />
                     ) : (
                       key

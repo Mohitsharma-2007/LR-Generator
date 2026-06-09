@@ -254,22 +254,22 @@ export default function LRDetail() {
               flexDirection: "column",
               alignItems: "center",
               gap: "4px",
-              background: "rgba(212,168,67,0.12)",
+              background: "var(--gold-glow)",
               border: "none",
             }}
           >
-            <Icons.DollarSign size={14} style={{ color: "#0A1628" }} />
+            <Icons.DollarSign size={14} style={{ color: "var(--gold-dark)" }} />
             <span
               style={{
                 fontSize: "9px",
-                color: "rgba(10,22,40,0.7)",
+                color: "var(--text-secondary)",
                 textTransform: "uppercase",
               }}
             >
               Freight
             </span>
             <span
-              style={{ fontSize: "13px", fontWeight: 700, color: "#0A1628" }}
+              style={{ fontSize: "13px", fontWeight: 700, color: "var(--gold-dark)" }}
             >
               ₹{lr.frightCharge.toLocaleString("en-IN")}
             </span>
@@ -380,7 +380,7 @@ export default function LRDetail() {
                   height: "24px",
                   borderRadius: "50%",
                   backgroundColor: "var(--gold)",
-                  color: "#0A1628",
+                  color: "#FFFFFF",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",

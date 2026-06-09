@@ -661,7 +661,7 @@ export default function CreateLR() {
                     style={{
                       fontSize: "13px",
                       fontWeight: 600,
-                      color: routeId === id ? "var(--gold)" : "#FFFFFF",
+                      color: routeId === id ? "var(--gold)" : "var(--text-primary)",
                     }}
                   >
                     {ROUTES[id].name}

@@ -128,6 +128,8 @@ export default function PreviewLR() {
       const blob = await generatePDFBlob(lrData);
       const base64Data = await getPDFBase64(blob);
 
+      const sanitizedApiUrl = settings.backendApiUrl ? settings.backendApiUrl.replace(/\/+$/, '') : "";
+      
       await sendEmail({
         to: selectedEmails,
         subject: `LR ${lrData.lrNo} - Maha Laxmi Transport Co.`,
@@ -136,7 +138,7 @@ export default function PreviewLR() {
         appPassword: settings.googleAppPassword,
         pdfBase64: base64Data,
         pdfFilename: `${lrData.lrNo}.pdf`,
-        apiUrl: settings.backendApiUrl ? `${settings.backendApiUrl}/api/email/send` : "/api/email/send",
+        apiUrl: sanitizedApiUrl ? `${sanitizedApiUrl}/api/email/send` : "/api/email/send",
       });
 
       triggerHaptic("success");

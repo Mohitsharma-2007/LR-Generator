@@ -1,5 +1,9 @@
 import { Router } from "express";
 import nodemailer from "nodemailer";
+import dns from "node:dns";
+
+// Force IPv4 to avoid Railway ESOCKET IPv6 errors with Gmail SMTP
+dns.setDefaultResultOrder("ipv4first");
 
 const router = Router();
 

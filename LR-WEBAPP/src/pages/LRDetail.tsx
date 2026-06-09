@@ -11,6 +11,7 @@ import {
 } from "../services/pdfService";
 import { sendEmail } from "../services/emailService";
 import { showNotification } from "../services/notificationService";
+import { triggerHaptic } from "../services/hapticsService";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import sentAnimation from "../assets/lottie/sent.json";
 
@@ -56,12 +57,15 @@ export default function LRDetail() {
 
   // Local Save (Download) PDF
   async function handleSaveLocal() {
+    triggerHaptic("light");
     setGeneratingPDF(true);
     try {
       const blob = await generatePDFBlob(lrData);
       await saveToDownloads(blob, lrData.lrNo);
+      triggerHaptic("success");
       showNotification("PDF Saved", `${lrData.lrNo}.pdf saved to LR/ folder`);
     } catch (err) {
+      triggerHaptic("error");
       alert("Failed to generate PDF: " + String(err));
     } finally {
       setGeneratingPDF(false);
@@ -70,12 +74,15 @@ export default function LRDetail() {
 
   // Open direct preview print
   async function handlePrintPreview() {
+    triggerHaptic("light");
     setGeneratingPDF(true);
     try {
       const blob = await generatePDFBlob(lrData);
       const url = URL.createObjectURL(blob);
+      triggerHaptic("success");
       window.open(url, "_blank");
     } catch (err) {
+      triggerHaptic("error");
       alert("Failed to generate print preview: " + String(err));
     } finally {
       setGeneratingPDF(false);
@@ -84,11 +91,14 @@ export default function LRDetail() {
 
   // Share via web share API
   async function handleShare() {
+    triggerHaptic("light");
     setGeneratingPDF(true);
     try {
       const blob = await generatePDFBlob(lrData);
       await sharePDF(blob, lrData.lrNo);
+      triggerHaptic("success");
     } catch (err) {
+      triggerHaptic("error");
       alert("Failed to share PDF: " + String(err));
     } finally {
       setGeneratingPDF(false);
@@ -97,11 +107,14 @@ export default function LRDetail() {
 
   // WhatsApp sharing
   async function handleWhatsApp() {
+    triggerHaptic("light");
     setGeneratingPDF(true);
     try {
       const blob = await generatePDFBlob(lrData);
       await shareToWhatsApp(blob, lrData.lrNo);
+      triggerHaptic("success");
     } catch (err) {
+      triggerHaptic("error");
       alert("Failed to share via WhatsApp: " + String(err));
     } finally {
       setGeneratingPDF(false);
@@ -127,6 +140,18 @@ export default function LRDetail() {
       return;
     }
 
+    const customApiUrl = localStorage.getItem("@mltc_api_url") || undefined;
+    
+    // Warn native Android users if they haven't set an API SMTP URL
+    const { Capacitor } = await import("@capacitor/core");
+    if (Capacitor.isNativePlatform() && !customApiUrl) {
+      triggerHaptic("error");
+      alert("API SMTP Server URL is not configured in Settings. Please set it to your server's IP address (e.g., http://192.168.1.5:5000) to send emails from your Android device.");
+      setLocation("/settings");
+      return;
+    }
+
+    triggerHaptic("light");
     setSendingEmail(true);
     setShowEmailPicker(false);
 
@@ -136,9 +161,6 @@ export default function LRDetail() {
       
       // 2. Convert to base64
       const base64Data = await getPDFBase64(blob);
-
-      // Custom API endpoint URL if saved
-      const customApiUrl = localStorage.getItem("@mltc_api_url") || undefined;
 
       // 3. Send email via server
       await sendEmail({
@@ -152,10 +174,12 @@ export default function LRDetail() {
         apiUrl: customApiUrl,
       });
 
+      triggerHaptic("success");
       setShowSent(true);
       showNotification("Email Sent", `LR ${lrData.lrNo} emailed to ${selectedEmails.length} recipient(s)`);
       setTimeout(() => setShowSent(false), 2500);
     } catch (err) {
+      triggerHaptic("error");
       alert("Failed to send email: " + String(err));
     } finally {
       setSendingEmail(false);
@@ -186,7 +210,7 @@ export default function LRDetail() {
           <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>{lr.date} · {route.name}</span>
         </div>
         <button
-          onClick={() => setLocation(`/create-lr?edit=${lr.id}`)}
+          onClick={() => { triggerHaptic("light"); setLocation(`/edit-lr/${lr.id}`); }}
           style={{ background: "none", border: "none", color: "var(--text-primary)", cursor: "pointer", display: "flex" }}
         >
           <Icons.Edit2 size={18} />
@@ -437,7 +461,7 @@ export default function LRDetail() {
                     return (
                       <div
                         key={email}
-                        onClick={() => toggleEmail(email)}
+                        onClick={() => { triggerHaptic("light"); toggleEmail(email); }}
                         style={{
                           display: "flex",
                           alignItems: "center",

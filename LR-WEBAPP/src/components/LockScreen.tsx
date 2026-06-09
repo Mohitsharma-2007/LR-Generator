@@ -3,6 +3,8 @@ import * as Icons from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import logoUrl from "../assets/logo/maha_laxmi.png";
 
+import { triggerHaptic } from "../services/hapticsService";
+
 const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "DEL"];
 
 export function LockScreen() {
@@ -27,7 +29,10 @@ export function LockScreen() {
   useEffect(() => {
     if (pin.length === 4) {
       const ok = verifyPin(pin);
-      if (!ok) {
+      if (ok) {
+        triggerHaptic("success");
+      } else {
+        triggerHaptic("error");
         setError("Incorrect PIN");
         setShake(true);
         const t = setTimeout(() => {
@@ -53,6 +58,7 @@ export function LockScreen() {
   }
 
   function pressKey(key: string) {
+    triggerHaptic("light");
     if (key === "DEL") {
       setPin((p) => p.slice(0, -1));
       setError("");

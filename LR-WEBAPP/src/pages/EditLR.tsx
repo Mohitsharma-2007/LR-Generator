@@ -1,12 +1,10 @@
 import { useEffect, useState, useMemo } from "react";
-import { useLocation } from "wouter";
+import { useLocation, useParams } from "wouter";
 import * as Icons from "lucide-react";
 import { useLR, ROUTES, type InvoiceRecord } from "../context/LRContext";
 import { InvoiceRow } from "../components/InvoiceRow";
 import { triggerHaptic } from "../services/hapticsService";
 import { generateLRHtml } from "../services/pdfHtml";
-import { DotLottieReact } from "@lottiefiles/dotlottie-react";
-import invoiceMadeAnimation from "../assets/lottie/invoice_made.json";
 
 function generateId() {
   return Date.now().toString() + Math.random().toString(36).substr(2, 6);
@@ -24,93 +22,48 @@ function newInvoice(dropLocation: string, freightCharge: number): InvoiceRecord 
   };
 }
 
-export default function CreateLR() {
+export default function EditLR() {
   const [, setLocation] = useLocation();
-  
-  // Parse query params from hash-based URL manually
-  // Hash format: #/create-lr?edit=123&routeId=2
-  const searchParams = useMemo(() => {
-    const hash = window.location.hash;
-    const qIdx = hash.indexOf("?");
-    if (qIdx === -1) return new URLSearchParams();
-    return new URLSearchParams(hash.substring(qIdx));
-  }, []);
-  
-  const { addLR, updateLR, getLRById, getNextLrNo, settings } = useLR();
+  const { id } = useParams<{ id: string }>();
+  const { updateLR, getLRById, settings } = useLR();
 
-  const editId = searchParams.get("edit") || null;
-  const existing = editId ? getLRById(editId) : undefined;
-  const isEdit = !!existing;
+  const existing = useMemo(() => (id ? getLRById(id) : undefined), [id, getLRById]);
 
   // Form Fields
-  const [routeId, setRouteId] = useState<1 | 2>(() => {
-    if (existing) return existing.routeId;
-    const qRoute = searchParams.get("routeId");
-    return qRoute === "2" ? 2 : 1;
-  });
-
-  const [lrNo, setLrNo] = useState(() => {
-    if (existing) return existing.lrNo;
-    return getNextLrNo();
-  });
-
-  const [consignmentNo, setConsignmentNo] = useState(() => {
-    if (existing) return existing.consignmentNo;
-    return searchParams.get("consignmentNo") || "";
-  });
-
-  const [date, setDate] = useState(() => {
-    if (existing) return existing.date;
-    const now = new Date();
-    const d = String(now.getDate()).padStart(2, "0");
-    const m = String(now.getMonth() + 1).padStart(2, "0");
-    const y = now.getFullYear();
-    return `${d}-${m}-${y}`;
-  });
-
-  const [vehicleNo, setVehicleNo] = useState(() => {
-    if (existing) return existing.vehicleNo;
-    return settings.vehicles[0] || "";
-  });
-
-  const [invoices, setInvoices] = useState<InvoiceRecord[]>(() => {
-    if (existing) return existing.invoices;
-    
-    const routeObj = ROUTES[searchParams.get("routeId") === "2" ? 2 : 1];
-    const qInvoices = searchParams.get("invoiceNos");
-    
-    if (qInvoices) {
-      return qInvoices
-        .split("|")
-        .filter(Boolean)
-        .map((invNo) => ({
-          ...newInvoice(routeObj.defaultDrop, routeObj.frightCharge),
-          invoiceNo: invNo.toUpperCase(),
-        }));
-    }
-    
-    return [newInvoice(routeObj.defaultDrop, routeObj.frightCharge)];
-  });
+  const [routeId, setRouteId] = useState<1 | 2>(1);
+  const [lrNo, setLrNo] = useState("");
+  const [consignmentNo, setConsignmentNo] = useState("");
+  const [date, setDate] = useState("");
+  const [vehicleNo, setVehicleNo] = useState("");
+  const [invoices, setInvoices] = useState<InvoiceRecord[]>([]);
 
   const [showVehiclePicker, setShowVehiclePicker] = useState(false);
   const [showRoutePicker, setShowRoutePicker] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
+
+  // Pre-fill existing data
+  useEffect(() => {
+    if (existing) {
+      setRouteId(existing.routeId);
+      setLrNo(existing.lrNo);
+      setConsignmentNo(existing.consignmentNo);
+      setDate(existing.date);
+      setVehicleNo(existing.vehicleNo);
+      setInvoices(existing.invoices || []);
+    } else {
+      // If not found, redirect back
+      setLocation("/lrs");
+    }
+  }, [existing, setLocation]);
 
   const activeRoute = ROUTES[routeId];
 
-  useEffect(() => {
-    if (!isEdit) {
-      setLrNo(getNextLrNo());
-    }
-  }, [getNextLrNo, isEdit]);
-
   // Handle route change
-  function handleRouteChange(id: 1 | 2) {
+  function handleRouteChange(newId: 1 | 2) {
     triggerHaptic("light");
-    setRouteId(id);
-    const r = ROUTES[id];
+    setRouteId(newId);
+    const r = ROUTES[newId];
     setInvoices((prev) =>
       prev.map((inv) => ({
         ...inv,
@@ -123,13 +76,13 @@ export default function CreateLR() {
 
   // Handle invoice modification
   function handleInvoiceChange(
-    id: string,
+    invId: string,
     field: keyof InvoiceRecord,
     value: string
   ) {
     setInvoices((prev) =>
       prev.map((inv) =>
-        inv.id === id
+        inv.id === invId
           ? {
               ...inv,
               [field]: field === "freightCharge" ? Number(value) || 0 : value,
@@ -149,9 +102,9 @@ export default function CreateLR() {
   }
 
   // Delete invoice row
-  function deleteInvoiceRow(id: string) {
+  function deleteInvoiceRow(invId: string) {
     triggerHaptic("warning");
-    setInvoices((prev) => prev.filter((inv) => inv.id !== id));
+    setInvoices((prev) => prev.filter((inv) => inv.id !== invId));
   }
 
   // Validation
@@ -169,7 +122,7 @@ export default function CreateLR() {
     return null;
   }
 
-  // Save LR
+  // Save changes
   async function handleSave() {
     triggerHaptic("light");
     const err = validate();
@@ -196,44 +149,33 @@ export default function CreateLR() {
         invoices,
       };
 
-      let savedId = editId;
-      if (isEdit && editId) {
-        await updateLR(editId, lrData);
-      } else {
-        const saved = await addLR(lrData);
-        savedId = saved.id;
+      if (id) {
+        await updateLR(id, lrData);
+        triggerHaptic("success");
+        setLocation(`/lr-detail/${id}`);
       }
-
-      triggerHaptic("success");
-      setShowSuccess(true);
-      setTimeout(() => {
-        setShowSuccess(false);
-        if (savedId) {
-          setLocation(`/lr-detail/${savedId}`);
-        } else {
-          setLocation("/lrs");
-        }
-      }, 1500);
     } catch (err) {
       triggerHaptic("error");
-      alert("Failed to save LR: " + String(err));
+      alert("Failed to save changes: " + String(err));
     } finally {
       setSaving(false);
     }
   }
+
+  if (!existing) return null;
 
   return (
     <div className="animate-fade-in-up" style={{ padding: "20px 0", display: "flex", flexDirection: "column", gap: "20px" }}>
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid var(--card-border)", paddingBottom: "14px" }}>
         <button
-          onClick={() => window.history.back()}
+          onClick={() => { triggerHaptic("light"); window.history.back(); }}
           style={{ background: "none", border: "none", color: "var(--text-primary)", cursor: "pointer", display: "flex" }}
         >
           <Icons.ArrowLeft size={22} />
         </button>
         <h2 style={{ fontSize: "18px", fontWeight: 700, margin: 0, fontFamily: "var(--font-outfit)" }}>
-          {isEdit ? "Edit Lorry Receipt" : "New Lorry Receipt"}
+          Edit Lorry Receipt
         </h2>
         <div style={{ width: "22px" }} />
       </div>
@@ -313,88 +255,46 @@ export default function CreateLR() {
                 justifyContent: "space-between",
                 textAlign: "left",
                 cursor: "pointer",
-                background: "rgba(0,0,0,0.15)",
               }}
             >
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <Icons.Truck size={16} style={{ color: "var(--gold)" }} />
-                <span>{vehicleNo || "Select vehicle number"}</span>
+                <span>{vehicleNo || "Select Vehicle"}</span>
               </div>
               <Icons.ChevronDown size={16} style={{ color: "var(--text-muted)" }} />
             </button>
           </div>
         </section>
 
-        {/* Route Details Readonly */}
-        <section className="glass-panel" style={{ padding: "16px", display: "flex", flexDirection: "column", gap: "10px" }}>
-          <h3 style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-            Auto-Filled Route Details
-          </h3>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-            <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>PICKUP LOCATION</span>
-            <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>{activeRoute.pickupLocation}</span>
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: "2px", borderTop: "1px solid rgba(255,255,255,0.03)", paddingTop: "8px" }}>
-            <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>DROP LOCATION</span>
-            <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>{activeRoute.dropLocation}</span>
-          </div>
-
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid rgba(255,255,255,0.03)", paddingTop: "8px" }}>
-            <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: 500 }}>Base Route Freight</span>
-            <span style={{ fontSize: "16px", color: "var(--gold)", fontWeight: 700 }}>
-              ₹{activeRoute.frightCharge.toLocaleString("en-IN")}
-            </span>
-          </div>
-        </section>
-
-        {/* Invoices List Section */}
-        <div>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-            <span
-              style={{
-                fontSize: "11px",
-                fontWeight: 600,
-                color: "var(--text-secondary)",
-                letterSpacing: "1.5px",
-                textTransform: "uppercase",
-              }}
-            >
-              Invoices ({invoices.length})
-            </span>
+        {/* Invoice Rows */}
+        <section className="glass-panel" style={{ padding: "16px", display: "flex", flexDirection: "column", gap: "14px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <h3 style={{ fontSize: "13px", fontWeight: 700, color: "var(--gold)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+              Invoices &amp; Freights
+            </h3>
             <button
               onClick={addInvoiceRow}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "4px",
-                padding: "6px 12px",
-                borderRadius: "8px",
-                border: "1px solid var(--gold)",
-                background: "none",
-                color: "var(--gold)",
-                fontSize: "12px",
-                fontWeight: 600,
-                cursor: "pointer",
-              }}
+              className="btn-secondary"
+              style={{ padding: "6px 12px", fontSize: "12px", display: "flex", alignItems: "center", gap: "4px" }}
             >
               <Icons.Plus size={14} />
               <span>Add Row</span>
             </button>
           </div>
 
-          {invoices.map((inv, idx) => (
-            <InvoiceRow
-              key={inv.id}
-              invoice={inv}
-              index={idx}
-              canDelete={invoices.length > 1}
-              onChange={handleInvoiceChange}
-              onDelete={deleteInvoiceRow}
-            />
-          ))}
-        </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+            {invoices.map((inv, idx) => (
+              <InvoiceRow
+                key={inv.id}
+                index={idx}
+                invoice={inv}
+                onChange={handleInvoiceChange}
+                onDelete={deleteInvoiceRow}
+                canDelete={invoices.length > 1}
+              />
+            ))}
+          </div>
+        </section>
       </div>
 
       {/* Form Action Footer */}
@@ -421,8 +321,8 @@ export default function CreateLR() {
             </>
           ) : (
             <>
-              <Icons.FilePlus size={18} />
-              <span>{isEdit ? "Update Lorry Receipt" : "Generate & Save LR"}</span>
+              <Icons.Save size={18} />
+              <span>Save Changes</span>
             </>
           )}
         </button>
@@ -441,18 +341,18 @@ export default function CreateLR() {
                 <Icons.X size={18} />
               </button>
             </div>
-            {([1, 2] as const).map((id) => (
+            {([1, 2] as const).map((rid) => (
               <div
-                key={id}
-                onClick={() => handleRouteChange(id)}
+                key={rid}
+                onClick={() => handleRouteChange(rid)}
                 style={{
                   display: "flex",
                   alignItems: "center",
                   padding: "12px",
                   borderRadius: "12px",
                   border: "1px solid var(--card-border)",
-                  background: routeId === id ? "rgba(212, 168, 67, 0.12)" : "rgba(255,255,255,0.01)",
-                  borderColor: routeId === id ? "var(--gold)" : "var(--card-border)",
+                  background: routeId === rid ? "rgba(212, 168, 67, 0.12)" : "rgba(255,255,255,0.01)",
+                  borderColor: routeId === rid ? "var(--gold)" : "var(--card-border)",
                   cursor: "pointer",
                   marginBottom: "8px",
                   gap: "10px",
@@ -464,24 +364,17 @@ export default function CreateLR() {
                     height: "16px",
                     borderRadius: "50%",
                     border: "2px solid var(--card-border)",
-                    borderColor: routeId === id ? "var(--gold)" : "var(--card-border)",
+                    borderColor: routeId === rid ? "var(--gold)" : "var(--card-border)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                   }}
                 >
-                  {routeId === id && (
+                  {routeId === rid && (
                     <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "var(--gold)" }} />
                   )}
                 </div>
-                <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-                  <span style={{ fontSize: "13px", fontWeight: 600, color: routeId === id ? "var(--gold)" : "#FFFFFF" }}>
-                    {ROUTES[id].name}
-                  </span>
-                  <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
-                    ₹{ROUTES[id].frightCharge.toLocaleString("en-IN")}
-                  </span>
-                </div>
+                <span style={{ fontSize: "14px", fontWeight: 500 }}>{ROUTES[rid].name}</span>
               </div>
             ))}
           </div>
@@ -573,48 +466,6 @@ export default function CreateLR() {
             >
               Close Preview
             </button>
-          </div>
-        </div>
-      )}
-
-      {/* Success Animation Modal */}
-      {showSuccess && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: "rgba(6, 14, 28, 0.75)",
-            backdropFilter: "blur(12px)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 9999,
-          }}
-        >
-          <div
-            className="glass-panel"
-            style={{
-              padding: "32px",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: "12px",
-              width: "220px",
-              textAlign: "center",
-            }}
-          >
-            <div style={{ width: "120px", height: "120px", display: "flex", justifyContent: "center", alignItems: "center" }}>
-              <DotLottieReact data={invoiceMadeAnimation} loop={false} autoplay />
-            </div>
-            <span style={{ fontSize: "18px", fontWeight: 700, color: "#FFFFFF" }}>
-              {isEdit ? "LR Updated!" : "LR Created!"}
-            </span>
-            <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>
-              Redirecting to details...
-            </span>
           </div>
         </div>
       )}

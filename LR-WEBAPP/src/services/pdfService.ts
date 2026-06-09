@@ -204,7 +204,7 @@ export async function shareToWhatsApp(
     // Web: download the file first, then open WhatsApp with text
     await saveToDownloads(blob, lrNo);
     const text = encodeURIComponent(
-      `Please find attached Lorry Receipt ${lrNo} for reference.`
+      `Attached the LR NO: ${lrNo}`
     );
     window.open(`https://api.whatsapp.com/send?text=${text}`, "_blank");
   }
@@ -227,7 +227,7 @@ async function nativeSharePDF(blob: Blob, lrNo: string): Promise<void> {
 
   await Share.share({
     title: `LR ${lrNo}`,
-    text: `Lorry Receipt ${lrNo} from Maha Laxmi Transport Co.`,
+    text: `Attached the LR NO: ${lrNo}`,
     url: writeResult.uri,
     dialogTitle: `Share ${lrNo}`,
   });

@@ -4,6 +4,9 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import { LRProvider } from "./context/LRContext";
 import { LockScreen } from "./components/LockScreen";
 import { requestNotificationPermission } from "./services/notificationService";
+import { App as CapApp } from "@capacitor/app";
+import { Capacitor } from "@capacitor/core";
+import { triggerHaptic } from "./services/hapticsService";
 
 // Pages
 import Dashboard from "./pages/Dashboard";
@@ -11,6 +14,7 @@ import LRsList from "./pages/LRsList";
 import ScanInvoice from "./pages/ScanInvoice";
 import Settings from "./pages/Settings";
 import CreateLR from "./pages/CreateLR";
+import EditLR from "./pages/EditLR";
 import LRDetail from "./pages/LRDetail";
 
 // Icons
@@ -150,9 +154,34 @@ function MainLayout({ children }: { children: React.ReactNode }) {
 function InnerApp() {
   const { isLocked } = useAuth();
 
-  // Request permissions on app mount
+  // Request permissions and handle hardware back button on app mount
   useEffect(() => {
     requestNotificationPermission().catch(() => {});
+
+    if (Capacitor.isNativePlatform()) {
+      const backListener = CapApp.addListener("backButton", () => {
+        const hash = window.location.hash || "#/";
+        const path = hash.substring(1).split("?")[0];
+        
+        if (
+          path === "/" ||
+          path === "" ||
+          path === "/lock" ||
+          path === "/dashboard"
+        ) {
+          triggerHaptic("medium");
+          CapApp.exitApp();
+        } else {
+          triggerHaptic("light");
+          window.history.back();
+        }
+      });
+
+      return () => {
+        backListener.then((l) => l.remove());
+      };
+    }
+    return () => {};
   }, []);
 
   if (isLocked) {
@@ -167,6 +196,7 @@ function InnerApp() {
         <Route path="/scan" component={ScanInvoice} />
         <Route path="/settings" component={Settings} />
         <Route path="/create-lr" component={CreateLR} />
+        <Route path="/edit-lr/:id" component={EditLR} />
         <Route path="/lr-detail/:id" component={LRDetail} />
         <Route>
           <div style={{ padding: "40px", textAlign: "center" }}>

@@ -28,13 +28,15 @@ router.post("/send", async (req, res) => {
       return;
     }
 
+    const cleanPassword = appPassword.replace(/\s+/g, "");
+
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
       port: 587,
       secure: false,
       auth: {
         user: senderEmail,
-        pass: appPassword,
+        pass: cleanPassword,
       },
       tls: { rejectUnauthorized: false },
     });

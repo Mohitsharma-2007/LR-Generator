@@ -22,7 +22,8 @@ export default function Settings() {
   const [openrouterApiKey, setOpenrouterApiKey] = useState(settings.openrouterApiKey);
   const [nextLrNumber, setNextLrNumber] = useState(settings.nextLrNumber);
   const [partnerName, setPartnerName] = useState(settings.partnerName || "NISSIN ABC LOGISTICS PVT. LTD.");
-  const [partnerDetails, setPartnerDetails] = useState(settings.partnerDetails || "");
+  const [partnerAddress, setPartnerAddress] = useState(settings.partnerAddress || "");
+  const [partnerGst, setPartnerGst] = useState(settings.partnerGst || "");
   
   // Custom API endpoint option
   const [apiUrl, setApiUrl] = useState(() => localStorage.getItem("@mltc_api_url") || "");
@@ -43,7 +44,9 @@ export default function Settings() {
         openrouterApiKey: openrouterApiKey.trim(),
         nextLrNumber: Number(nextLrNumber) || settings.nextLrNumber,
         partnerName: partnerName.trim(),
-        partnerDetails: partnerDetails.trim(),
+        partnerAddress: partnerAddress.trim(),
+        partnerGst: partnerGst.trim(),
+        partnerDetails: `${partnerAddress.trim()}\nGSTIN: ${partnerGst.trim()}`,
       });
       localStorage.setItem("@mltc_api_url", apiUrl.trim());
       alert("Settings saved successfully.");
@@ -182,6 +185,26 @@ export default function Settings() {
           ? backup.vehicles.map((v: any) => v.vehicleNo).filter(Boolean)
           : settings.vehicles;
 
+        const partnerDetails = backup.settings?.partnerDetails || "";
+        let partnerAddress = backup.settings?.partnerAddress || "";
+        let partnerGst = backup.settings?.partnerGst || "";
+
+        if (partnerDetails && (!partnerAddress || !partnerGst)) {
+          const lines = partnerDetails.split("\n");
+          const gstLine = lines.find((l: string) => l.toUpperCase().includes("GSTIN") || l.toUpperCase().includes("GSTN"));
+          if (gstLine) {
+            partnerGst = gstLine.replace(/GSTIN:\s*|GSTN:\s*/i, "").trim();
+            partnerAddress = lines
+              .filter((l: string) => !l.toUpperCase().includes("GSTIN") && !l.toUpperCase().includes("GSTN"))
+              .join("\n")
+              .replace(/,$/, "")
+              .trim();
+          } else {
+            partnerAddress = partnerDetails;
+            partnerGst = "";
+          }
+        }
+
         const importedSettings = {
           emailIds: backup.settings?.emailIds || [],
           senderEmail: backup.settings?.senderEmail || "",
@@ -190,7 +213,9 @@ export default function Settings() {
           vehicles: importedVehicles,
           nextLrNumber: backup.settings?.nextLrNumber || 88,
           partnerName: backup.settings?.partnerName || "NISSIN ABC LOGISTICS PVT. LTD.",
-          partnerDetails: backup.settings?.partnerDetails || "",
+          partnerDetails,
+          partnerAddress,
+          partnerGst,
         };
 
         await restoreBackup({
@@ -204,7 +229,8 @@ export default function Settings() {
         setOpenrouterApiKey(importedSettings.openrouterApiKey);
         setNextLrNumber(importedSettings.nextLrNumber);
         setPartnerName(importedSettings.partnerName);
-        setPartnerDetails(importedSettings.partnerDetails);
+        setPartnerAddress(importedSettings.partnerAddress);
+        setPartnerGst(importedSettings.partnerGst);
 
         alert("Data restored successfully!");
         window.location.reload();
@@ -325,14 +351,26 @@ export default function Settings() {
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-          <label className="input-label">Partner Details (Address, GST, etc.)</label>
+          <label className="input-label">Partner Address</label>
           <textarea
             className="form-input"
-            value={partnerDetails}
-            onChange={(e) => setPartnerDetails(e.target.value)}
-            rows={4}
-            placeholder="Unit No. 222, 244, 246 &amp; 247, 2nd Floor,&#10;Centrum Plaza, Golf Course Road, Sector - 53,&#10;Gurugram - 122 002, Haryana,&#10;GSTIN: 06AABCN0379D1ZS"
+            value={partnerAddress}
+            onChange={(e) => setPartnerAddress(e.target.value)}
+            rows={3}
+            placeholder="Unit No. 222, 244, 246 &amp; 247, 2nd Floor,&#10;Centrum Plaza, Golf Course Road, Sector - 53,&#10;Gurugram - 122 002, Haryana"
             style={{ fontFamily: "monospace", fontSize: "12.5px", resize: "vertical" }}
+          />
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+          <label className="input-label">Partner GSTIN</label>
+          <input
+            type="text"
+            className="form-input"
+            value={partnerGst}
+            onChange={(e) => setPartnerGst(e.target.value.toUpperCase())}
+            placeholder="e.g. 06AABCN0379D1ZS"
+            style={{ fontFamily: "monospace" }}
           />
         </div>
 

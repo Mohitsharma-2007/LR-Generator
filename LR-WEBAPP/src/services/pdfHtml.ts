@@ -14,14 +14,21 @@ export function generateLRHtml(lr: LRRecord, logoDataUri?: string): string {
   const balance = total - advance;
 
   let partnerName = "NISSIN ABC LOGISTICS PVT. LTD.";
-  let partnerDetails = "Unit No. 222, 244, 246 &amp; 247, 2nd Floor,<br>Centrum Plaza, Golf Course Road, Sector - 53,<br>Gurugram - 122 002, Haryana,<br>GSTIN: 06AABCN0379D1ZS";
+  let partnerAddress = "Unit No. 222, 244, 246 &amp; 247, 2nd Floor,<br>Centrum Plaza, Golf Course Road, Sector - 53,<br>Gurugram - 122 002, Haryana";
+  let partnerGst = "06AABCN0379D1ZS";
+  let partnerDetails = `${partnerAddress}<br>GSTIN: ${partnerGst}`;
 
   try {
     const raw = localStorage.getItem("@app_settings");
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed.partnerName) partnerName = parsed.partnerName;
-      if (parsed.partnerDetails) {
+      
+      if (parsed.partnerAddress || parsed.partnerGst) {
+        if (parsed.partnerAddress) partnerAddress = parsed.partnerAddress.replace(/\n/g, "<br>");
+        if (parsed.partnerGst) partnerGst = parsed.partnerGst;
+        partnerDetails = `${partnerAddress}<br>GSTIN: ${partnerGst}`;
+      } else if (parsed.partnerDetails) {
         partnerDetails = parsed.partnerDetails.replace(/\n/g, "<br>");
       }
     }

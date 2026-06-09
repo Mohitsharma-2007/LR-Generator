@@ -38,6 +38,8 @@ export interface AppSettings {
   nextLrNumber: number;
   partnerName: string;
   partnerDetails: string;
+  partnerAddress: string;
+  partnerGst: string;
 }
 
 export const ROUTES = {
@@ -97,6 +99,8 @@ const DEFAULT_SETTINGS: AppSettings = {
   nextLrNumber: 88,
   partnerName: "NISSIN ABC LOGISTICS PVT. LTD.",
   partnerDetails: "Unit No. 222, 244, 246 & 247, 2nd Floor,\nCentrum Plaza, Golf Course Road, Sector - 53,\nGurugram - 122 002, Haryana,\nGSTIN: 06AABCN0379D1ZS",
+  partnerAddress: "Unit No. 222, 244, 246 & 247, 2nd Floor,\nCentrum Plaza, Golf Course Road, Sector - 53,\nGurugram - 122 002, Haryana",
+  partnerGst: "06AABCN0379D1ZS",
 };
 
 interface LRContextType {
@@ -128,8 +132,28 @@ export function LRProvider({ children }: { children: React.ReactNode }) {
       const lrsJson = localStorage.getItem(STORAGE_KEYS.LRS);
       const settingsJson = localStorage.getItem(STORAGE_KEYS.SETTINGS);
       if (lrsJson) setLrs(JSON.parse(lrsJson));
-      if (settingsJson)
-        setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(settingsJson) });
+      if (settingsJson) {
+        const parsed = JSON.parse(settingsJson);
+        const merged = { ...DEFAULT_SETTINGS, ...parsed };
+        
+        // Migrate legacy partnerDetails to separate address & GST if missing
+        if (merged.partnerDetails && (!merged.partnerAddress || !merged.partnerGst)) {
+          const lines = merged.partnerDetails.split("\n");
+          const gstLine = lines.find((l: string) => l.toUpperCase().includes("GSTIN") || l.toUpperCase().includes("GSTN"));
+          if (gstLine) {
+            merged.partnerGst = gstLine.replace(/GSTIN:\s*|GSTN:\s*/i, "").trim();
+            merged.partnerAddress = lines
+              .filter((l: string) => !l.toUpperCase().includes("GSTIN") && !l.toUpperCase().includes("GSTN"))
+              .join("\n")
+              .replace(/,$/, "")
+              .trim();
+          } else {
+            merged.partnerAddress = merged.partnerDetails;
+            merged.partnerGst = "";
+          }
+        }
+        setSettings(merged);
+      }
     } catch (e) {
       // ignore
     } finally {

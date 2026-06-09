@@ -228,6 +228,7 @@ export default function Settings() {
           senderEmail: backup.settings?.senderEmail || "",
           googleAppPassword: backup.settings?.googleAppPassword || "",
           openrouterApiKey: backup.settings?.openrouterApiKey || "",
+          backendApiUrl: backup.settings?.backendApiUrl || "https://workspaceapi-server-production-a382.up.railway.app",
           vehicles: importedVehicles,
           nextLrNumber: backup.settings?.nextLrNumber || 88,
           partnerName: backup.settings?.partnerName || "NISSIN ABC LOGISTICS PVT. LTD.",

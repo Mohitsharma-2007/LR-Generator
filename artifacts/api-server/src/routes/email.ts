@@ -1,9 +1,6 @@
 import { Router } from "express";
 import nodemailer from "nodemailer";
-import dns from "node:dns";
-
-// Force IPv4 to avoid Railway ESOCKET IPv6 errors with Gmail SMTP
-dns.setDefaultResultOrder("ipv4first");
+import dns from "node:dns/promises";
 
 const router = Router();
 
@@ -34,15 +31,28 @@ router.post("/send", async (req, res) => {
 
     const cleanPassword = appPassword.replace(/\s+/g, "");
 
+    // Force IPv4 resolution manually for Railway environments
+    let smtpHost = "smtp.gmail.com";
+    try {
+      const ipv4Addresses = await dns.resolve4("smtp.gmail.com");
+      if (ipv4Addresses && ipv4Addresses.length > 0) {
+        smtpHost = ipv4Addresses[0];
+      }
+    } catch (dnsErr) {
+      req.log.warn({ dnsErr }, "Failed to resolve IPv4 for smtp.gmail.com, falling back to default");
+    }
+
     const transporter = nodemailer.createTransport({
-      service: "gmail",
-      host: "smtp.gmail.com",
+      host: smtpHost,
       port: 465,
       secure: true,
       auth: {
         user: senderEmail,
         pass: cleanPassword,
       },
+      tls: {
+        servername: "smtp.gmail.com" // Ensure TLS cert matches domain, not IP
+      }
     });
 
     const recipients = Array.isArray(to) ? to.join(",") : to;

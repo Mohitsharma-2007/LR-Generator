@@ -1,5 +1,3 @@
-import { Capacitor } from "@capacitor/core";
-
 interface SendEmailParams {
   to: string[];
   subject: string;
@@ -12,38 +10,46 @@ interface SendEmailParams {
 }
 
 export async function sendEmail(params: SendEmailParams): Promise<void> {
-  let apiBaseUrl = "";
-  
-  if (Capacitor.isNativePlatform()) {
-    apiBaseUrl = localStorage.getItem("@mltc_api_url") || "http://10.0.2.2:5000";
-  } else {
-    apiBaseUrl = localStorage.getItem("@mltc_api_url") || "";
-  }
+  const cleanPassword = params.appPassword.replace(/\s+/g, "");
 
-  const targetUrl = apiBaseUrl 
-    ? `${apiBaseUrl.replace(/\/$/, "")}/api/email/send`
-    : "/api/email/send";
-
-  const payload = {
-    to: params.to,
-    subject: params.subject,
-    body: params.body,
-    pdfBase64: params.pdfBase64,
-    pdfFilename: params.pdfFilename,
-    senderEmail: params.senderEmail,
-    appPassword: params.appPassword,
+  // Prepare SMTP.js payload
+  const payload: any = {
+    nocache: Math.floor(1e6 * Math.random() + 1),
+    Action: "Send",
+    Host: "smtp.gmail.com",
+    Port: 587,
+    Username: params.senderEmail,
+    Password: cleanPassword,
+    To: params.to.join(","),
+    From: params.senderEmail,
+    Subject: params.subject,
+    Body: params.body,
   };
 
-  const response = await fetch(targetUrl, {
+  if (params.pdfBase64 && params.pdfFilename) {
+    payload.Attachments = [
+      {
+        name: params.pdfFilename,
+        data: `data:application/pdf;base64,${params.pdfBase64}`,
+      },
+    ];
+  }
+
+  // SMTP.js expects a stringified JSON payload sent with application/x-www-form-urlencoded content-type
+  const response = await fetch("https://smtpjs.com/v3/smtpjs.aspx", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
     body: JSON.stringify(payload),
   });
 
   if (!response.ok) {
-    const data = await response.json().catch(() => ({}));
-    throw new Error(
-      (data as { error?: string }).error || "Failed to send email"
-    );
+    throw new Error(`Failed to connect to email relay: ${response.statusText}`);
+  }
+
+  const resultText = await response.text();
+  if (resultText !== "OK") {
+    throw new Error(resultText || "Failed to send email");
   }
 }

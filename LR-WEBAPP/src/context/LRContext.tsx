@@ -96,7 +96,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   senderEmail: "",
   googleAppPassword: "",
   openrouterApiKey: "",
-  backendApiUrl: "https://workspaceapi-server-production-a382.up.railway.app",
+  backendApiUrl: "https://lr-generator-rymc.onrender.com",
   vehicles: ["UP16PT9444"],
   nextLrNumber: 88,
   partnerName: "NISSIN ABC LOGISTICS PVT. LTD.",

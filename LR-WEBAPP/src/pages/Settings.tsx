@@ -22,7 +22,7 @@ export default function Settings() {
   const [senderEmail, setSenderEmail] = useState(settings.senderEmail);
   const [googleAppPassword, setGoogleAppPassword] = useState(settings.googleAppPassword);
   const [openrouterApiKey, setOpenrouterApiKey] = useState(settings.openrouterApiKey);
-  const [backendApiUrl, setBackendApiUrl] = useState(settings.backendApiUrl || "https://workspaceapi-server-production-a382.up.railway.app");
+  const [backendApiUrl, setBackendApiUrl] = useState(settings.backendApiUrl || "https://lr-generator-rymc.onrender.com");
   const [nextLrNumber, setNextLrNumber] = useState(settings.nextLrNumber);
   const [partnerName, setPartnerName] = useState(settings.partnerName || "NISSIN ABC LOGISTICS PVT. LTD.");
   const [partnerAddress, setPartnerAddress] = useState(settings.partnerAddress || "");
@@ -228,7 +228,7 @@ export default function Settings() {
           senderEmail: backup.settings?.senderEmail || "",
           googleAppPassword: backup.settings?.googleAppPassword || "",
           openrouterApiKey: backup.settings?.openrouterApiKey || "",
-          backendApiUrl: backup.settings?.backendApiUrl || "https://workspaceapi-server-production-a382.up.railway.app",
+          backendApiUrl: backup.settings?.backendApiUrl || "https://lr-generator-rymc.onrender.com",
           vehicles: importedVehicles,
           nextLrNumber: backup.settings?.nextLrNumber || 88,
           partnerName: backup.settings?.partnerName || "NISSIN ABC LOGISTICS PVT. LTD.",

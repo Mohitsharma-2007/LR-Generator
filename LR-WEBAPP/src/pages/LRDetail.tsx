@@ -10,6 +10,7 @@ import {
   getPDFBase64,
 } from "../services/pdfService";
 import { sendEmail } from "../services/emailService";
+import { showNotification } from "../services/notificationService";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import sentAnimation from "../assets/lottie/sent.json";
 
@@ -58,8 +59,8 @@ export default function LRDetail() {
     setGeneratingPDF(true);
     try {
       const blob = await generatePDFBlob(lrData);
-      // This will download as `LR/MLTC-XX.pdf`
       await saveToDownloads(blob, lrData.lrNo);
+      showNotification("PDF Saved", `${lrData.lrNo}.pdf saved to LR/ folder`);
     } catch (err) {
       alert("Failed to generate PDF: " + String(err));
     } finally {
@@ -152,6 +153,7 @@ export default function LRDetail() {
       });
 
       setShowSent(true);
+      showNotification("Email Sent", `LR ${lrData.lrNo} emailed to ${selectedEmails.length} recipient(s)`);
       setTimeout(() => setShowSent(false), 2500);
     } catch (err) {
       alert("Failed to send email: " + String(err));

@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useLocation, useSearch } from "wouter";
+import { useEffect, useState, useMemo } from "react";
+import { useLocation } from "wouter";
 import * as Icons from "lucide-react";
 import { useLR, ROUTES, type InvoiceRecord } from "../context/LRContext";
 import { InvoiceRow } from "../components/InvoiceRow";
@@ -24,7 +24,15 @@ function newInvoice(dropLocation: string, freightCharge: number): InvoiceRecord 
 
 export default function CreateLR() {
   const [, setLocation] = useLocation();
-  const searchParams = new URLSearchParams(useSearch());
+  
+  // Parse query params from hash-based URL manually
+  // Hash format: #/create-lr?edit=123&routeId=2
+  const searchParams = useMemo(() => {
+    const hash = window.location.hash;
+    const qIdx = hash.indexOf("?");
+    if (qIdx === -1) return new URLSearchParams();
+    return new URLSearchParams(hash.substring(qIdx));
+  }, []);
   
   const { addLR, updateLR, getLRById, getNextLrNo, settings } = useLR();
 
@@ -419,26 +427,41 @@ export default function CreateLR() {
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  padding: "14px",
+                  padding: "10px 12px",
                   borderRadius: "12px",
                   border: "1px solid var(--card-border)",
                   background: routeId === id ? "rgba(212, 168, 67, 0.12)" : "rgba(255,255,255,0.01)",
                   borderColor: routeId === id ? "var(--gold)" : "var(--card-border)",
                   cursor: "pointer",
                   marginBottom: "8px",
-                  gap: "12px",
+                  gap: "10px",
                 }}
               >
-                <Icons.MapPin size={18} style={{ color: routeId === id ? "var(--gold)" : "var(--text-muted)" }} />
+                <div
+                  style={{
+                    width: "18px",
+                    height: "18px",
+                    borderRadius: "50%",
+                    border: "2px solid",
+                    borderColor: routeId === id ? "var(--gold)" : "var(--card-border)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  {routeId === id && (
+                    <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "var(--gold)" }} />
+                  )}
+                </div>
                 <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-                  <span style={{ fontSize: "14px", fontWeight: 600, color: routeId === id ? "var(--gold)" : "#FFFFFF" }}>
+                  <span style={{ fontSize: "13px", fontWeight: 600, color: routeId === id ? "var(--gold)" : "#FFFFFF" }}>
                     {ROUTES[id].name}
                   </span>
-                  <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+                  <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
                     ₹{ROUTES[id].frightCharge.toLocaleString("en-IN")}
                   </span>
                 </div>
-                {routeId === id && <Icons.Check size={18} style={{ color: "var(--gold)" }} />}
               </div>
             ))}
           </div>

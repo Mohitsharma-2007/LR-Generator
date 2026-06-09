@@ -3,6 +3,7 @@ import { Router, Route, Switch, useLocation } from "wouter";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { LRProvider } from "./context/LRContext";
 import { LockScreen } from "./components/LockScreen";
+import { requestNotificationPermission } from "./services/notificationService";
 
 // Pages
 import Dashboard from "./pages/Dashboard";
@@ -58,7 +59,7 @@ function MainLayout({ children }: { children: React.ReactNode }) {
   };
 
   // Hide nav bar when editing or viewing details
-  const isFormOrDetail = location.startsWith("/create-lr") || location.startsWith("/lr-detail");
+  const isFormOrDetail = location.startsWith("/create-lr") || location.startsWith("/lr-detail") || location.startsWith("/edit-lr");
 
   return (
     <div
@@ -148,6 +149,11 @@ function MainLayout({ children }: { children: React.ReactNode }) {
 
 function InnerApp() {
   const { isLocked } = useAuth();
+
+  // Request permissions on app mount
+  useEffect(() => {
+    requestNotificationPermission().catch(() => {});
+  }, []);
 
   if (isLocked) {
     return <LockScreen />;

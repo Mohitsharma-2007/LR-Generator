@@ -96,7 +96,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   senderEmail: "",
   googleAppPassword: "",
   openrouterApiKey: "",
-  backendApiUrl: "http://localhost:5000",
+  backendApiUrl: "https://workspaceapi-server-production-a382.up.railway.app",
   vehicles: ["UP16PT9444"],
   nextLrNumber: 88,
   partnerName: "NISSIN ABC LOGISTICS PVT. LTD.",

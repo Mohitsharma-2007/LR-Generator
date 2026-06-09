@@ -22,7 +22,7 @@ export default function Settings() {
   const [senderEmail, setSenderEmail] = useState(settings.senderEmail);
   const [googleAppPassword, setGoogleAppPassword] = useState(settings.googleAppPassword);
   const [openrouterApiKey, setOpenrouterApiKey] = useState(settings.openrouterApiKey);
-  const [backendApiUrl, setBackendApiUrl] = useState(settings.backendApiUrl || "http://localhost:5000");
+  const [backendApiUrl, setBackendApiUrl] = useState(settings.backendApiUrl || "https://workspaceapi-server-production-a382.up.railway.app");
   const [nextLrNumber, setNextLrNumber] = useState(settings.nextLrNumber);
   const [partnerName, setPartnerName] = useState(settings.partnerName || "NISSIN ABC LOGISTICS PVT. LTD.");
   const [partnerAddress, setPartnerAddress] = useState(settings.partnerAddress || "");

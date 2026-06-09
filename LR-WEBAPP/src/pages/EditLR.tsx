@@ -10,7 +10,10 @@ function generateId() {
   return Date.now().toString() + Math.random().toString(36).substr(2, 6);
 }
 
-function newInvoice(dropLocation: string, freightCharge: number): InvoiceRecord {
+function newInvoice(
+  dropLocation: string,
+  freightCharge: number,
+): InvoiceRecord {
   return {
     id: generateId(),
     invoiceNo: "",
@@ -27,7 +30,10 @@ export default function EditLR() {
   const { id } = useParams<{ id: string }>();
   const { updateLR, getLRById, settings } = useLR();
 
-  const existing = useMemo(() => (id ? getLRById(id) : undefined), [id, getLRById]);
+  const existing = useMemo(
+    () => (id ? getLRById(id) : undefined),
+    [id, getLRById],
+  );
 
   // Form Fields
   const [routeId, setRouteId] = useState<1 | 2>(1);
@@ -69,7 +75,7 @@ export default function EditLR() {
         ...inv,
         dropLocation: r.defaultDrop,
         freightCharge: r.frightCharge,
-      }))
+      })),
     );
     setShowRoutePicker(false);
   }
@@ -78,7 +84,7 @@ export default function EditLR() {
   function handleInvoiceChange(
     invId: string,
     field: keyof InvoiceRecord,
-    value: string
+    value: string,
   ) {
     setInvoices((prev) =>
       prev.map((inv) =>
@@ -87,8 +93,8 @@ export default function EditLR() {
               ...inv,
               [field]: field === "freightCharge" ? Number(value) || 0 : value,
             }
-          : inv
-      )
+          : inv,
+      ),
     );
   }
 
@@ -117,7 +123,8 @@ export default function EditLR() {
     if (invoices.length === 0) return "At least one invoice is required.";
     for (const inv of invoices) {
       if (!inv.invoiceNo.trim()) return "All invoice numbers are required.";
-      if (!inv.freightCharge || inv.freightCharge <= 0) return "Freight Charge must be greater than zero.";
+      if (!inv.freightCharge || inv.freightCharge <= 0)
+        return "Freight Charge must be greater than zero.";
     }
     return null;
   }
@@ -136,7 +143,7 @@ export default function EditLR() {
     try {
       const totalFreight = invoices.reduce(
         (sum, inv) => sum + inv.freightCharge,
-        0
+        0,
       );
 
       const lrData = {
@@ -165,16 +172,48 @@ export default function EditLR() {
   if (!existing) return null;
 
   return (
-    <div className="animate-fade-in-up" style={{ padding: "20px 0", display: "flex", flexDirection: "column", gap: "20px" }}>
+    <div
+      className="animate-fade-in-up"
+      style={{
+        padding: "20px 0",
+        display: "flex",
+        flexDirection: "column",
+        gap: "20px",
+      }}
+    >
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid var(--card-border)", paddingBottom: "14px" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          borderBottom: "1px solid var(--card-border)",
+          paddingBottom: "14px",
+        }}
+      >
         <button
-          onClick={() => { triggerHaptic("light"); window.history.back(); }}
-          style={{ background: "none", border: "none", color: "var(--text-primary)", cursor: "pointer", display: "flex" }}
+          onClick={() => {
+            triggerHaptic("light");
+            window.history.back();
+          }}
+          style={{
+            background: "none",
+            border: "none",
+            color: "var(--text-primary)",
+            cursor: "pointer",
+            display: "flex",
+          }}
         >
           <Icons.ArrowLeft size={22} />
         </button>
-        <h2 style={{ fontSize: "18px", fontWeight: 700, margin: 0, fontFamily: "var(--font-outfit)" }}>
+        <h2
+          style={{
+            fontSize: "18px",
+            fontWeight: 700,
+            margin: 0,
+            fontFamily: "var(--font-outfit)",
+          }}
+        >
           Edit Lorry Receipt
         </h2>
         <div style={{ width: "22px" }} />
@@ -182,12 +221,14 @@ export default function EditLR() {
 
       {/* Form Fields */}
       <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-        
         {/* Route Selector */}
         <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
           <label className="input-label">Route Selection</label>
           <button
-            onClick={() => { triggerHaptic("light"); setShowRoutePicker(true); }}
+            onClick={() => {
+              triggerHaptic("light");
+              setShowRoutePicker(true);
+            }}
             className="form-input"
             style={{
               display: "flex",
@@ -201,13 +242,32 @@ export default function EditLR() {
               <Icons.Map size={16} style={{ color: "var(--gold)" }} />
               <span>{activeRoute.name}</span>
             </div>
-            <Icons.ChevronDown size={16} style={{ color: "var(--text-muted)" }} />
+            <Icons.ChevronDown
+              size={16}
+              style={{ color: "var(--text-muted)" }}
+            />
           </button>
         </div>
 
         {/* LR & Date */}
-        <section className="glass-panel" style={{ padding: "16px", display: "flex", flexDirection: "column", gap: "14px" }}>
-          <h3 style={{ fontSize: "13px", fontWeight: 700, color: "var(--gold)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+        <section
+          className="glass-panel"
+          style={{
+            padding: "16px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "14px",
+          }}
+        >
+          <h3
+            style={{
+              fontSize: "13px",
+              fontWeight: 700,
+              color: "var(--gold)",
+              textTransform: "uppercase",
+              letterSpacing: "0.5px",
+            }}
+          >
             Receipt Parameters
           </h3>
 
@@ -247,7 +307,10 @@ export default function EditLR() {
           <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
             <label className="input-label">Vehicle Number *</label>
             <button
-              onClick={() => { triggerHaptic("light"); setShowVehiclePicker(true); }}
+              onClick={() => {
+                triggerHaptic("light");
+                setShowVehiclePicker(true);
+              }}
               className="form-input"
               style={{
                 display: "flex",
@@ -257,32 +320,67 @@ export default function EditLR() {
                 cursor: "pointer",
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "8px" }}
+              >
                 <Icons.Truck size={16} style={{ color: "var(--gold)" }} />
                 <span>{vehicleNo || "Select Vehicle"}</span>
               </div>
-              <Icons.ChevronDown size={16} style={{ color: "var(--text-muted)" }} />
+              <Icons.ChevronDown
+                size={16}
+                style={{ color: "var(--text-muted)" }}
+              />
             </button>
           </div>
         </section>
 
         {/* Invoice Rows */}
-        <section className="glass-panel" style={{ padding: "16px", display: "flex", flexDirection: "column", gap: "14px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <h3 style={{ fontSize: "13px", fontWeight: 700, color: "var(--gold)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+        <section
+          className="glass-panel"
+          style={{
+            padding: "16px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "14px",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <h3
+              style={{
+                fontSize: "13px",
+                fontWeight: 700,
+                color: "var(--gold)",
+                textTransform: "uppercase",
+                letterSpacing: "0.5px",
+              }}
+            >
               Invoices &amp; Freights
             </h3>
             <button
               onClick={addInvoiceRow}
               className="btn-secondary"
-              style={{ padding: "6px 12px", fontSize: "12px", display: "flex", alignItems: "center", gap: "4px" }}
+              style={{
+                padding: "6px 12px",
+                fontSize: "12px",
+                display: "flex",
+                alignItems: "center",
+                gap: "4px",
+              }}
             >
               <Icons.Plus size={14} />
               <span>Add Row</span>
             </button>
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "12px" }}
+          >
             {invoices.map((inv, idx) => (
               <InvoiceRow
                 key={inv.id}
@@ -300,9 +398,19 @@ export default function EditLR() {
       {/* Form Action Footer */}
       <div style={{ display: "flex", gap: "10px", marginTop: "12px" }}>
         <button
-          onClick={() => { triggerHaptic("light"); setShowPreview(true); }}
+          onClick={() => {
+            triggerHaptic("light");
+            setShowPreview(true);
+          }}
           className="btn-secondary"
-          style={{ flex: 1, padding: "16px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
+          style={{
+            flex: 1,
+            padding: "16px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "8px",
+          }}
         >
           <Icons.Eye size={18} />
           <span>Preview</span>
@@ -312,7 +420,14 @@ export default function EditLR() {
           onClick={handleSave}
           disabled={saving}
           className="btn-primary"
-          style={{ flex: 2, padding: "16px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
+          style={{
+            flex: 2,
+            padding: "16px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "8px",
+          }}
         >
           {saving ? (
             <>
@@ -330,13 +445,39 @@ export default function EditLR() {
 
       {/* Center-Aligned Route Picker Modal */}
       {showRoutePicker && (
-        <div className="modal-overlay" onClick={() => setShowRoutePicker(false)}>
+        <div
+          className="modal-overlay"
+          onClick={() => setShowRoutePicker(false)}
+        >
           <div className="modal-sheet" onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-              <span style={{ fontSize: "16px", fontWeight: 700, color: "var(--gold)" }}>Select Route</span>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "16px",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "16px",
+                  fontWeight: 700,
+                  color: "var(--gold)",
+                }}
+              >
+                Select Route
+              </span>
               <button
-                onClick={() => { triggerHaptic("light"); setShowRoutePicker(false); }}
-                style={{ background: "none", border: "none", color: "var(--text-secondary)", cursor: "pointer" }}
+                onClick={() => {
+                  triggerHaptic("light");
+                  setShowRoutePicker(false);
+                }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "var(--text-secondary)",
+                  cursor: "pointer",
+                }}
               >
                 <Icons.X size={18} />
               </button>
@@ -351,8 +492,12 @@ export default function EditLR() {
                   padding: "12px",
                   borderRadius: "12px",
                   border: "1px solid var(--card-border)",
-                  background: routeId === rid ? "rgba(212, 168, 67, 0.12)" : "rgba(255,255,255,0.01)",
-                  borderColor: routeId === rid ? "var(--gold)" : "var(--card-border)",
+                  background:
+                    routeId === rid
+                      ? "rgba(212, 168, 67, 0.12)"
+                      : "rgba(255,255,255,0.01)",
+                  borderColor:
+                    routeId === rid ? "var(--gold)" : "var(--card-border)",
                   cursor: "pointer",
                   marginBottom: "8px",
                   gap: "10px",
@@ -364,17 +509,27 @@ export default function EditLR() {
                     height: "16px",
                     borderRadius: "50%",
                     border: "2px solid var(--card-border)",
-                    borderColor: routeId === rid ? "var(--gold)" : "var(--card-border)",
+                    borderColor:
+                      routeId === rid ? "var(--gold)" : "var(--card-border)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                   }}
                 >
                   {routeId === rid && (
-                    <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "var(--gold)" }} />
+                    <div
+                      style={{
+                        width: "8px",
+                        height: "8px",
+                        borderRadius: "50%",
+                        background: "var(--gold)",
+                      }}
+                    />
                   )}
                 </div>
-                <span style={{ fontSize: "14px", fontWeight: 500 }}>{ROUTES[rid].name}</span>
+                <span style={{ fontSize: "14px", fontWeight: 500 }}>
+                  {ROUTES[rid].name}
+                </span>
               </div>
             ))}
           </div>
@@ -383,18 +538,46 @@ export default function EditLR() {
 
       {/* Center-Aligned Vehicle Picker Modal */}
       {showVehiclePicker && (
-        <div className="modal-overlay" onClick={() => setShowVehiclePicker(false)}>
+        <div
+          className="modal-overlay"
+          onClick={() => setShowVehiclePicker(false)}
+        >
           <div className="modal-sheet" onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-              <span style={{ fontSize: "16px", fontWeight: 700, color: "var(--gold)" }}>Select Vehicle</span>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "16px",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "16px",
+                  fontWeight: 700,
+                  color: "var(--gold)",
+                }}
+              >
+                Select Vehicle
+              </span>
               <button
-                onClick={() => { triggerHaptic("light"); setShowVehiclePicker(false); }}
-                style={{ background: "none", border: "none", color: "var(--text-secondary)", cursor: "pointer" }}
+                onClick={() => {
+                  triggerHaptic("light");
+                  setShowVehiclePicker(false);
+                }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "var(--text-secondary)",
+                  cursor: "pointer",
+                }}
               >
                 <Icons.X size={18} />
               </button>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "8px" }}
+            >
               {settings.vehicles.map((v) => (
                 <div
                   key={v}
@@ -407,8 +590,12 @@ export default function EditLR() {
                     padding: "12px",
                     borderRadius: "12px",
                     border: "1px solid var(--card-border)",
-                    background: vehicleNo === v ? "rgba(212, 168, 67, 0.12)" : "rgba(255,255,255,0.01)",
-                    borderColor: vehicleNo === v ? "var(--gold)" : "var(--card-border)",
+                    background:
+                      vehicleNo === v
+                        ? "rgba(212, 168, 67, 0.12)"
+                        : "rgba(255,255,255,0.01)",
+                    borderColor:
+                      vehicleNo === v ? "var(--gold)" : "var(--card-border)",
                     cursor: "pointer",
                     fontSize: "14px",
                     fontWeight: 500,
@@ -418,7 +605,14 @@ export default function EditLR() {
                 </div>
               ))}
               {settings.vehicles.length === 0 && (
-                <span style={{ fontSize: "12px", color: "var(--text-muted)", textAlign: "center", padding: "10px" }}>
+                <span
+                  style={{
+                    fontSize: "12px",
+                    color: "var(--text-muted)",
+                    textAlign: "center",
+                    padding: "10px",
+                  }}
+                >
                   No vehicles configured. Add vehicles in Settings.
                 </span>
               )}
@@ -432,33 +626,78 @@ export default function EditLR() {
         <div className="modal-overlay" onClick={() => setShowPreview(false)}>
           <div
             className="modal-sheet"
-            style={{ maxWidth: "95%", width: "700px", padding: "20px", display: "flex", flexDirection: "column", gap: "14px" }}
+            style={{
+              maxWidth: "95%",
+              width: "700px",
+              padding: "20px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "14px",
+            }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: "16px", fontWeight: 700, color: "var(--gold)" }}>LR Document Preview</span>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "16px",
+                  fontWeight: 700,
+                  color: "var(--gold)",
+                }}
+              >
+                LR Document Preview
+              </span>
               <button
-                onClick={() => { triggerHaptic("light"); setShowPreview(false); }}
-                style={{ background: "none", border: "none", color: "var(--text-secondary)", cursor: "pointer" }}
+                onClick={() => {
+                  triggerHaptic("light");
+                  setShowPreview(false);
+                }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "var(--text-secondary)",
+                  cursor: "pointer",
+                }}
               >
                 <Icons.X size={18} />
               </button>
             </div>
-            <div style={{ maxHeight: "60vh", overflowY: "auto", border: "1px solid var(--card-border)", borderRadius: "12px", background: "white" }}>
+            <div
+              style={{
+                maxHeight: "60vh",
+                overflowY: "auto",
+                border: "1px solid var(--card-border)",
+                borderRadius: "12px",
+                background: "white",
+              }}
+            >
               <LRReceiptPreview
-                lr={{
-                  lrNo,
-                  consignmentNo,
-                  date,
-                  vehicleNo,
-                  routeId,
-                  frightCharge: invoices.reduce((sum, inv) => sum + inv.freightCharge, 0),
-                  invoices,
-                } as any}
+                lr={
+                  {
+                    lrNo,
+                    consignmentNo,
+                    date,
+                    vehicleNo,
+                    routeId,
+                    frightCharge: invoices.reduce(
+                      (sum, inv) => sum + inv.freightCharge,
+                      0,
+                    ),
+                    invoices,
+                  } as any
+                }
               />
             </div>
             <button
-              onClick={() => { triggerHaptic("light"); setShowPreview(false); }}
+              onClick={() => {
+                triggerHaptic("light");
+                setShowPreview(false);
+              }}
               className="btn-secondary"
               style={{ width: "100%" }}
             >

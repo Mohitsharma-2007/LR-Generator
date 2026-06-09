@@ -52,8 +52,8 @@ export async function generatePDFBlob(lr: LRRecord): Promise<Blob> {
               img.onload = () => resolve();
               img.onerror = () => resolve();
             }
-          })
-      )
+          }),
+      ),
     );
 
     // Briefly make it visible for html2canvas (it needs computed styles)
@@ -88,7 +88,7 @@ export async function generatePDFBlob(lr: LRRecord): Promise<Blob> {
       margin,
       margin,
       imgWidth,
-      Math.min(imgHeight, usableHeight)
+      Math.min(imgHeight, usableHeight),
     );
 
     return pdf.output("blob");
@@ -123,7 +123,7 @@ export async function getPDFBase64(blob: Blob): Promise<string> {
  */
 export async function saveToDownloads(
   blob: Blob,
-  lrNo: string
+  lrNo: string,
 ): Promise<string | void> {
   const cleanName = lrNo.replace(/[^a-zA-Z0-9-_]/g, "_");
   const filename = `${cleanName}.pdf`;
@@ -193,19 +193,14 @@ export async function sharePDF(blob: Blob, lrNo: string): Promise<void> {
  * On native: saves PDF then opens native share sheet (user picks WhatsApp)
  * On web: downloads PDF then opens WhatsApp web link with text
  */
-export async function shareToWhatsApp(
-  blob: Blob,
-  lrNo: string
-): Promise<void> {
+export async function shareToWhatsApp(blob: Blob, lrNo: string): Promise<void> {
   if (Capacitor.isNativePlatform()) {
     // On native, the share sheet lets the user pick WhatsApp directly
     await nativeSharePDF(blob, lrNo);
   } else {
     // Web: download the file first, then open WhatsApp with text
     await saveToDownloads(blob, lrNo);
-    const text = encodeURIComponent(
-      `Attached the LR NO: ${lrNo}`
-    );
+    const text = encodeURIComponent(`Attached the LR NO: ${lrNo}`);
     window.open(`https://api.whatsapp.com/send?text=${text}`, "_blank");
   }
 }

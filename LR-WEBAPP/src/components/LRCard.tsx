@@ -35,7 +35,13 @@ export function LRCard({ lr, onDelete, onShare }: LRCardProps) {
         gap: "12px",
       }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+        }}
+      >
         <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
           <span
             style={{
@@ -66,22 +72,50 @@ export function LRCard({ lr, onDelete, onShare }: LRCardProps) {
             <span>{route.name}</span>
           </div>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "3px" }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-end",
+            gap: "3px",
+          }}
+        >
           <span style={{ fontSize: "16px", fontWeight: 700, color: "#FFFFFF" }}>
             ₹{lr.frightCharge.toLocaleString("en-IN")}
           </span>
-          <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>{lr.date}</span>
+          <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
+            {lr.date}
+          </span>
         </div>
       </div>
 
-      <div style={{ height: "1px", backgroundColor: "rgba(255, 255, 255, 0.07)" }} />
+      <div
+        style={{ height: "1px", backgroundColor: "rgba(255, 255, 255, 0.07)" }}
+      />
 
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "var(--text-secondary)" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            fontSize: "12px",
+            color: "var(--text-secondary)",
+          }}
+        >
           <Icons.Truck size={13} style={{ opacity: 0.6 }} />
           <span>{lr.vehicleNo}</span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }} onClick={(e) => e.stopPropagation()}>
+        <div
+          style={{ display: "flex", alignItems: "center", gap: "8px" }}
+          onClick={(e) => e.stopPropagation()}
+        >
           <button
             title="Edit LR"
             className="action-btn"
@@ -130,7 +164,10 @@ export function LRCard({ lr, onDelete, onShare }: LRCardProps) {
           >
             <Icons.Trash2 size={13} />
           </button>
-          <Icons.ChevronRight size={14} style={{ color: "rgba(212, 168, 67, 0.5)", marginLeft: "4px" }} />
+          <Icons.ChevronRight
+            size={14}
+            style={{ color: "rgba(212, 168, 67, 0.5)", marginLeft: "4px" }}
+          />
         </div>
       </div>
     </div>

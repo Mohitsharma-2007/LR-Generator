@@ -38,7 +38,7 @@ export async function requestNotificationPermission(): Promise<boolean> {
  */
 export async function showNotification(
   title: string,
-  body: string
+  body: string,
 ): Promise<void> {
   if (!Capacitor.isNativePlatform()) {
     // Web fallback

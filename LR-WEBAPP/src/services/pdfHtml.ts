@@ -14,7 +14,8 @@ export function generateLRHtml(lr: LRRecord, logoDataUri?: string): string {
   const balance = total - advance;
 
   let partnerName = "NISSIN ABC LOGISTICS PVT. LTD.";
-  let partnerAddress = "Unit No. 222, 244, 246 &amp; 247, 2nd Floor,<br>Centrum Plaza, Golf Course Road, Sector - 53,<br>Gurugram - 122 002, Haryana";
+  let partnerAddress =
+    "Unit No. 222, 244, 246 &amp; 247, 2nd Floor,<br>Centrum Plaza, Golf Course Road, Sector - 53,<br>Gurugram - 122 002, Haryana";
   let partnerGst = "06AABCN0379D1ZS";
   let partnerDetails = `${partnerAddress}<br>GSTIN: ${partnerGst}`;
 
@@ -23,9 +24,10 @@ export function generateLRHtml(lr: LRRecord, logoDataUri?: string): string {
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed.partnerName) partnerName = parsed.partnerName;
-      
+
       if (parsed.partnerAddress || parsed.partnerGst) {
-        if (parsed.partnerAddress) partnerAddress = parsed.partnerAddress.replace(/\n/g, "<br>");
+        if (parsed.partnerAddress)
+          partnerAddress = parsed.partnerAddress.replace(/\n/g, "<br>");
         if (parsed.partnerGst) partnerGst = parsed.partnerGst;
         partnerDetails = `${partnerAddress}<br>GSTIN: ${partnerGst}`;
       } else if (parsed.partnerDetails) {
@@ -46,7 +48,7 @@ export function generateLRHtml(lr: LRRecord, logoDataUri?: string): string {
       <td class="td-center">${inv.description}</td>
       <td class="td-center">${inv.goodsWeight}</td>
       <td class="td-right">&#8377;${formatCurrency(inv.freightCharge)}</td>
-    </tr>`
+    </tr>`,
     )
     .join("");
 

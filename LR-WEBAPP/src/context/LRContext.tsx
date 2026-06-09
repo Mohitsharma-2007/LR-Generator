@@ -30,11 +30,6 @@ export interface LRRecord {
 }
 
 export interface AppSettings {
-  emailIds: string[];
-  senderEmail: string;
-  googleAppPassword: string;
-  openrouterApiKey: string;
-  backendApiUrl: string;
   vehicles: string[];
   nextLrNumber: number;
   partnerName: string;
@@ -92,16 +87,13 @@ const STORAGE_KEYS = {
 };
 
 const DEFAULT_SETTINGS: AppSettings = {
-  emailIds: [],
-  senderEmail: "",
-  googleAppPassword: "",
-  openrouterApiKey: "",
-  backendApiUrl: "https://lr-generator-rymc.onrender.com",
   vehicles: ["UP16PT9444"],
   nextLrNumber: 88,
   partnerName: "NISSIN ABC LOGISTICS PVT. LTD.",
-  partnerDetails: "Unit No. 222, 244, 246 & 247, 2nd Floor,\nCentrum Plaza, Golf Course Road, Sector - 53,\nGurugram - 122 002, Haryana,\nGSTIN: 06AABCN0379D1ZS",
-  partnerAddress: "Unit No. 222, 244, 246 & 247, 2nd Floor,\nCentrum Plaza, Golf Course Road, Sector - 53,\nGurugram - 122 002, Haryana",
+  partnerDetails:
+    "Unit No. 222, 244, 246 & 247, 2nd Floor,\nCentrum Plaza, Golf Course Road, Sector - 53,\nGurugram - 122 002, Haryana,\nGSTIN: 06AABCN0379D1ZS",
+  partnerAddress:
+    "Unit No. 222, 244, 246 & 247, 2nd Floor,\nCentrum Plaza, Golf Course Road, Sector - 53,\nGurugram - 122 002, Haryana",
   partnerGst: "06AABCN0379D1ZS",
 };
 
@@ -115,7 +107,10 @@ interface LRContextType {
   updateSettings: (updates: Partial<AppSettings>) => Promise<void>;
   getLRById: (id: string) => LRRecord | undefined;
   getNextLrNo: () => string;
-  restoreBackup: (backupData: { lrs: LRRecord[]; settings: AppSettings }) => Promise<void>;
+  restoreBackup: (backupData: {
+    lrs: LRRecord[];
+    settings: AppSettings;
+  }) => Promise<void>;
 }
 
 const LRContext = createContext<LRContextType | null>(null);
@@ -137,15 +132,28 @@ export function LRProvider({ children }: { children: React.ReactNode }) {
       if (settingsJson) {
         const parsed = JSON.parse(settingsJson);
         const merged = { ...DEFAULT_SETTINGS, ...parsed };
-        
+
         // Migrate legacy partnerDetails to separate address & GST if missing
-        if (merged.partnerDetails && (!merged.partnerAddress || !merged.partnerGst)) {
+        if (
+          merged.partnerDetails &&
+          (!merged.partnerAddress || !merged.partnerGst)
+        ) {
           const lines = merged.partnerDetails.split("\n");
-          const gstLine = lines.find((l: string) => l.toUpperCase().includes("GSTIN") || l.toUpperCase().includes("GSTN"));
+          const gstLine = lines.find(
+            (l: string) =>
+              l.toUpperCase().includes("GSTIN") ||
+              l.toUpperCase().includes("GSTN"),
+          );
           if (gstLine) {
-            merged.partnerGst = gstLine.replace(/GSTIN:\s*|GSTN:\s*/i, "").trim();
+            merged.partnerGst = gstLine
+              .replace(/GSTIN:\s*|GSTN:\s*/i, "")
+              .trim();
             merged.partnerAddress = lines
-              .filter((l: string) => !l.toUpperCase().includes("GSTIN") && !l.toUpperCase().includes("GSTN"))
+              .filter(
+                (l: string) =>
+                  !l.toUpperCase().includes("GSTIN") &&
+                  !l.toUpperCase().includes("GSTN"),
+              )
               .join("\n")
               .replace(/,$/, "")
               .trim();
@@ -186,17 +194,17 @@ export function LRProvider({ children }: { children: React.ReactNode }) {
       await saveSettings({ ...settings, nextLrNumber: newNum });
       return newLR;
     },
-    [lrs, settings, saveLRs, saveSettings]
+    [lrs, settings, saveLRs, saveSettings],
   );
 
   const updateLR = useCallback(
     async (id: string, updates: Partial<LRRecord>) => {
       const updated = lrs.map((lr) =>
-        lr.id === id ? { ...lr, ...updates } : lr
+        lr.id === id ? { ...lr, ...updates } : lr,
       );
       await saveLRs(updated);
     },
-    [lrs, saveLRs]
+    [lrs, saveLRs],
   );
 
   const deleteLR = useCallback(
@@ -204,7 +212,7 @@ export function LRProvider({ children }: { children: React.ReactNode }) {
       const updated = lrs.filter((lr) => lr.id !== id);
       await saveLRs(updated);
     },
-    [lrs, saveLRs]
+    [lrs, saveLRs],
   );
 
   const updateSettings = useCallback(
@@ -212,17 +220,17 @@ export function LRProvider({ children }: { children: React.ReactNode }) {
       const updated = { ...settings, ...updates };
       await saveSettings(updated);
     },
-    [settings, saveSettings]
+    [settings, saveSettings],
   );
 
   const getLRById = useCallback(
     (id: string) => lrs.find((lr) => lr.id === id),
-    [lrs]
+    [lrs],
   );
 
   const getNextLrNo = useCallback(
     () => `MLTC-${settings.nextLrNumber}`,
-    [settings.nextLrNumber]
+    [settings.nextLrNumber],
   );
 
   const restoreBackup = useCallback(
@@ -234,7 +242,7 @@ export function LRProvider({ children }: { children: React.ReactNode }) {
         await saveSettings({ ...DEFAULT_SETTINGS, ...backupData.settings });
       }
     },
-    [saveLRs, saveSettings]
+    [saveLRs, saveSettings],
   );
 
   return (

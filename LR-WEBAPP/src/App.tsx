@@ -11,7 +11,7 @@ import { triggerHaptic } from "./services/hapticsService";
 // Pages
 import Dashboard from "./pages/Dashboard";
 import LRsList from "./pages/LRsList";
-import ScanInvoice from "./pages/ScanInvoice";
+
 import Settings from "./pages/Settings";
 import CreateLR from "./pages/CreateLR";
 import EditLR from "./pages/EditLR";
@@ -51,7 +51,7 @@ function MainLayout({ children }: { children: React.ReactNode }) {
   const navItems = [
     { path: "/", label: "Home", icon: Icons.Home },
     { path: "/lrs", label: "LRs List", icon: Icons.FileText },
-    { path: "/scan", label: "Scan AI", icon: Icons.Camera },
+
     { path: "/settings", label: "Settings", icon: Icons.Sliders },
   ];
 
@@ -64,7 +64,10 @@ function MainLayout({ children }: { children: React.ReactNode }) {
   };
 
   // Hide nav bar when editing or viewing details
-  const isFormOrDetail = location.startsWith("/create-lr") || location.startsWith("/lr-detail") || location.startsWith("/edit-lr");
+  const isFormOrDetail =
+    location.startsWith("/create-lr") ||
+    location.startsWith("/lr-detail") ||
+    location.startsWith("/edit-lr");
 
   return (
     <div
@@ -133,7 +136,10 @@ function MainLayout({ children }: { children: React.ReactNode }) {
                   outline: "none",
                 }}
               >
-                <ActiveIcon size={20} style={{ transform: active ? "scale(1.15)" : "scale(1)" }} />
+                <ActiveIcon
+                  size={20}
+                  style={{ transform: active ? "scale(1.15)" : "scale(1)" }}
+                />
                 <span
                   style={{
                     fontSize: "9px",
@@ -163,12 +169,14 @@ function InnerApp() {
       const backListener = CapApp.addListener("backButton", () => {
         const hash = window.location.hash || "#/";
         const path = hash.substring(1).split("?")[0];
-        
+
         if (
           path === "/" ||
           path === "" ||
           path === "/lock" ||
-          path === "/dashboard"
+          path === "/dashboard" ||
+          path === "/lrs" ||
+          path === "/settings"
         ) {
           triggerHaptic("medium");
           CapApp.exitApp();
@@ -194,7 +202,7 @@ function InnerApp() {
       <Switch>
         <Route path="/" component={Dashboard} />
         <Route path="/lrs" component={LRsList} />
-        <Route path="/scan" component={ScanInvoice} />
+
         <Route path="/settings" component={Settings} />
         <Route path="/create-lr" component={CreateLR} />
         <Route path="/edit-lr/:id" component={EditLR} />
@@ -203,7 +211,11 @@ function InnerApp() {
         <Route>
           <div style={{ padding: "40px", textAlign: "center" }}>
             <h3>Page Not Found</h3>
-            <button onClick={() => window.location.hash = "/"} className="btn-primary" style={{ margin: "20px auto" }}>
+            <button
+              onClick={() => (window.location.hash = "/")}
+              className="btn-primary"
+              style={{ margin: "20px auto" }}
+            >
               Go Home
             </button>
           </div>

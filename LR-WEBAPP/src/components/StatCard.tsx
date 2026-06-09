@@ -23,7 +23,9 @@ export function StatCard({ label, value, icon, highlight }: StatCardProps) {
         gap: "5px",
         transition: "all 0.3s ease",
         background: highlight ? "rgba(212, 168, 67, 0.18)" : "var(--card-bg)",
-        borderColor: highlight ? "rgba(212, 168, 67, 0.4)" : "var(--card-border)",
+        borderColor: highlight
+          ? "rgba(212, 168, 67, 0.4)"
+          : "var(--card-border)",
       }}
       className="glass-panel"
     >
@@ -36,7 +38,9 @@ export function StatCard({ label, value, icon, highlight }: StatCardProps) {
           alignItems: "center",
           justifyContent: "center",
           marginBottom: "2px",
-          background: highlight ? "rgba(10, 22, 40, 0.25)" : "rgba(212, 168, 67, 0.12)",
+          background: highlight
+            ? "rgba(10, 22, 40, 0.25)"
+            : "rgba(212, 168, 67, 0.12)",
         }}
       >
         {IconComponent && (

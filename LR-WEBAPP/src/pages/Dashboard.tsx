@@ -45,7 +45,13 @@ export default function Dashboard() {
               border: "1.5px solid rgba(212, 168, 67, 0.3)",
             }}
           />
-          <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.1 }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              lineHeight: 1.1,
+            }}
+          >
             <span
               style={{
                 fontSize: "15px",
@@ -69,7 +75,7 @@ export default function Dashboard() {
             </span>
           </div>
         </div>
-        
+
         <button
           onClick={() => setLocation("/settings")}
           style={{
@@ -93,7 +99,12 @@ export default function Dashboard() {
       {/* Stats Row */}
       <div style={{ display: "flex", gap: "10px", marginBottom: "24px" }}>
         <StatCard label="Total LRs" value={lrs.length} icon="FileText" />
-        <StatCard label="This Month" value={thisMonth.length} icon="Calendar" highlight />
+        <StatCard
+          label="This Month"
+          value={thisMonth.length}
+          icon="Calendar"
+          highlight
+        />
         <StatCard label="Chennai→" value={chennaiCount} icon="ArrowRight" />
       </div>
 
@@ -109,13 +120,29 @@ export default function Dashboard() {
           marginBottom: "24px",
           gap: "12px",
           textAlign: "center",
-          background: "linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(212, 168, 67, 0.02) 100%)",
+          background:
+            "linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(212, 168, 67, 0.02) 100%)",
         }}
       >
-        <div style={{ width: "220px", height: "140px", display: "flex", justifyContent: "center", alignItems: "center" }}>
+        <div
+          style={{
+            width: "220px",
+            height: "140px",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
           <DotLottieReact data={truckAnimation} loop autoplay />
         </div>
-        <span style={{ fontSize: "14px", fontWeight: 500, color: "var(--text-secondary)", letterSpacing: "0.5px" }}>
+        <span
+          style={{
+            fontSize: "14px",
+            fontWeight: 500,
+            color: "var(--text-secondary)",
+            letterSpacing: "0.5px",
+          }}
+        >
           Lorry Receipt Digital Dashboard
         </span>
       </div>
@@ -166,8 +193,12 @@ export default function Dashboard() {
           >
             <Icons.Plus size={20} />
           </div>
-          <span style={{ fontSize: "13px", fontWeight: 600, color: "#FFFFFF" }}>Create LR</span>
-          <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>Manual entry</span>
+          <span style={{ fontSize: "13px", fontWeight: 600, color: "#FFFFFF" }}>
+            Create LR
+          </span>
+          <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>
+            Manual entry
+          </span>
         </div>
 
         {/* Scan Invoice */}
@@ -199,8 +230,12 @@ export default function Dashboard() {
           >
             <Icons.Camera size={18} />
           </div>
-          <span style={{ fontSize: "13px", fontWeight: 600, color: "#FFFFFF" }}>Scan LR</span>
-          <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>AI extraction</span>
+          <span style={{ fontSize: "13px", fontWeight: 600, color: "#FFFFFF" }}>
+            Scan LR
+          </span>
+          <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>
+            AI extraction
+          </span>
         </div>
 
         {/* All LRs */}
@@ -232,8 +267,12 @@ export default function Dashboard() {
           >
             <Icons.List size={18} />
           </div>
-          <span style={{ fontSize: "13px", fontWeight: 600, color: "#FFFFFF" }}>All LRs</span>
-          <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>View records</span>
+          <span style={{ fontSize: "13px", fontWeight: 600, color: "#FFFFFF" }}>
+            All LRs
+          </span>
+          <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>
+            View records
+          </span>
         </div>
       </div>
 
@@ -289,21 +328,54 @@ export default function Dashboard() {
                 gap: "10px",
               }}
             >
-              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "3px" }}>
-                <span style={{ fontSize: "14px", fontWeight: 700, color: "var(--gold)" }}>
+              <div
+                style={{
+                  flex: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "3px",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: "14px",
+                    fontWeight: 700,
+                    color: "var(--gold)",
+                  }}
+                >
                   {lr.lrNo}
                 </span>
-                <span style={{ fontSize: "11px", color: "var(--text-secondary)" }}>
+                <span
+                  style={{ fontSize: "11px", color: "var(--text-secondary)" }}
+                >
                   {ROUTES[lr.routeId].name}
                 </span>
               </div>
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "3px" }}>
-                <span style={{ fontSize: "14px", fontWeight: 600, color: "#FFFFFF" }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "flex-end",
+                  gap: "3px",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    color: "#FFFFFF",
+                  }}
+                >
                   ₹{lr.frightCharge.toLocaleString("en-IN")}
                 </span>
-                <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>{lr.date}</span>
+                <span style={{ fontSize: "10px", color: "var(--text-muted)" }}>
+                  {lr.date}
+                </span>
               </div>
-              <Icons.ChevronRight size={15} style={{ color: "rgba(212,168,67,0.4)" }} />
+              <Icons.ChevronRight
+                size={15}
+                style={{ color: "rgba(212,168,67,0.4)" }}
+              />
             </div>
           ))}
         </>
@@ -320,8 +392,17 @@ export default function Dashboard() {
             gap: "12px",
           }}
         >
-          <Icons.FileText size={36} style={{ color: "rgba(255,255,255,0.12)" }} />
-          <span style={{ fontSize: "13px", color: "var(--text-muted)", textAlign: "center" }}>
+          <Icons.FileText
+            size={36}
+            style={{ color: "rgba(255,255,255,0.12)" }}
+          />
+          <span
+            style={{
+              fontSize: "13px",
+              color: "var(--text-muted)",
+              textAlign: "center",
+            }}
+          >
             No LRs yet. Create your first one!
           </span>
         </div>

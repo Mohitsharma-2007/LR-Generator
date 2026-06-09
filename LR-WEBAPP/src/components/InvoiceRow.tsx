@@ -28,7 +28,13 @@ export function InvoiceRow({
         gap: "10px",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <div
             style={{
@@ -46,7 +52,13 @@ export function InvoiceRow({
           >
             {index + 1}
           </div>
-          <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-primary)" }}>
+          <span
+            style={{
+              fontSize: "13px",
+              fontWeight: 600,
+              color: "var(--text-primary)",
+            }}
+          >
             Invoice Entry
           </span>
         </div>
@@ -92,33 +104,53 @@ export function InvoiceRow({
       </div>
 
       <div style={{ display: "flex", gap: "8px" }}>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "4px" }}>
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            gap: "4px",
+          }}
+        >
           <label className="input-label">Packages</label>
           <input
             type="text"
             className="form-input"
             value={invoice.noOfPackages}
-            onChange={(e) => onChange(invoice.id, "noOfPackages", e.target.value)}
+            onChange={(e) =>
+              onChange(invoice.id, "noOfPackages", e.target.value)
+            }
           />
         </div>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "4px" }}>
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            gap: "4px",
+          }}
+        >
           <label className="input-label">Goods Weight</label>
           <input
             type="text"
             className="form-input"
             value={invoice.goodsWeight}
-            onChange={(e) => onChange(invoice.id, "goodsWeight", e.target.value)}
+            onChange={(e) =>
+              onChange(invoice.id, "goodsWeight", e.target.value)
+            }
           />
         </div>
       </div>
-      
+
       <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
         <label className="input-label">Freight Charge (₹) *</label>
         <input
           type="number"
           className="form-input"
           value={invoice.freightCharge || ""}
-          onChange={(e) => onChange(invoice.id, "freightCharge", e.target.value)}
+          onChange={(e) =>
+            onChange(invoice.id, "freightCharge", e.target.value)
+          }
           placeholder="Freight Charge"
         />
       </div>

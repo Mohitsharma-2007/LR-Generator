@@ -45,9 +45,10 @@ export default function LRsList() {
     const matchLr = lr.lrNo.toLowerCase().includes(query);
     const matchVehicle = lr.vehicleNo.toLowerCase().includes(query);
     const matchConsignment = lr.consignmentNo.toLowerCase().includes(query);
-    const matchInvoices = lr.invoices.some((inv) =>
-      inv.invoiceNo.toLowerCase().includes(query) ||
-      inv.dropLocation.toLowerCase().includes(query)
+    const matchInvoices = lr.invoices.some(
+      (inv) =>
+        inv.invoiceNo.toLowerCase().includes(query) ||
+        inv.dropLocation.toLowerCase().includes(query),
     );
 
     return matchLr || matchVehicle || matchConsignment || matchInvoices;
@@ -131,7 +132,8 @@ export default function LRsList() {
             border: "none",
             cursor: "pointer",
             transition: "all 0.2s ease",
-            backgroundColor: routeFilter === "all" ? "var(--gold)" : "transparent",
+            backgroundColor:
+              routeFilter === "all" ? "var(--gold)" : "transparent",
             color: routeFilter === "all" ? "#060E1C" : "var(--text-secondary)",
           }}
         >
@@ -148,7 +150,8 @@ export default function LRsList() {
             border: "none",
             cursor: "pointer",
             transition: "all 0.2s ease",
-            backgroundColor: routeFilter === "1" ? "var(--gold)" : "transparent",
+            backgroundColor:
+              routeFilter === "1" ? "var(--gold)" : "transparent",
             color: routeFilter === "1" ? "#060E1C" : "var(--text-secondary)",
           }}
         >
@@ -165,7 +168,8 @@ export default function LRsList() {
             border: "none",
             cursor: "pointer",
             transition: "all 0.2s ease",
-            backgroundColor: routeFilter === "2" ? "var(--gold)" : "transparent",
+            backgroundColor:
+              routeFilter === "2" ? "var(--gold)" : "transparent",
             color: routeFilter === "2" ? "#060E1C" : "var(--text-secondary)",
           }}
         >
@@ -191,8 +195,14 @@ export default function LRsList() {
             boxShadow: "0 4px 24px rgba(0,0,0,0.5)",
           }}
         >
-          <Icons.Loader size={16} className="animate-spin-fast" style={{ color: "var(--gold)" }} />
-          <span style={{ fontSize: "13px", fontWeight: 500 }}>Generating PDF...</span>
+          <Icons.Loader
+            size={16}
+            className="animate-spin-fast"
+            style={{ color: "var(--gold)" }}
+          />
+          <span style={{ fontSize: "13px", fontWeight: 500 }}>
+            Generating PDF...
+          </span>
         </div>
       )}
 
@@ -218,9 +228,20 @@ export default function LRsList() {
               gap: "12px",
             }}
           >
-            <Icons.FileText size={40} style={{ color: "rgba(255,255,255,0.08)" }} />
-            <span style={{ fontSize: "14px", color: "var(--text-muted)", textAlign: "center" }}>
-              {lrs.length === 0 ? "No LRs generated yet." : "No matching LRs found."}
+            <Icons.FileText
+              size={40}
+              style={{ color: "rgba(255,255,255,0.08)" }}
+            />
+            <span
+              style={{
+                fontSize: "14px",
+                color: "var(--text-muted)",
+                textAlign: "center",
+              }}
+            >
+              {lrs.length === 0
+                ? "No LRs generated yet."
+                : "No matching LRs found."}
             </span>
           </div>
         )}

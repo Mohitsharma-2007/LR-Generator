@@ -60,11 +60,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (raw) {
           const auth: AuthSettings = JSON.parse(raw);
           const pinVal = auth.appPin ?? "";
-          const bioVal = (auth.biometricEnabled && isBiometricsRegistered()) ?? false;
-          
+          const bioVal =
+            (auth.biometricEnabled && isBiometricsRegistered()) ?? false;
+
           setBiometricEnabled_(bioVal);
           setAppPin_(pinVal);
-          
+
           if (bioVal || pinVal) {
             setIsLocked(true);
           }
@@ -75,18 +76,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     init();
   }, []);
 
-  const persist = useCallback(
-    async (patch: Partial<AuthSettings>) => {
-      const raw = localStorage.getItem(AUTH_KEY);
-      const current: AuthSettings = raw
-        ? JSON.parse(raw)
-        : { biometricEnabled: false, appPin: "" };
-      const next = { ...current, ...patch };
-      localStorage.setItem(AUTH_KEY, JSON.stringify(next));
-      return next;
-    },
-    []
-  );
+  const persist = useCallback(async (patch: Partial<AuthSettings>) => {
+    const raw = localStorage.getItem(AUTH_KEY);
+    const current: AuthSettings = raw
+      ? JSON.parse(raw)
+      : { biometricEnabled: false, appPin: "" };
+    const next = { ...current, ...patch };
+    localStorage.setItem(AUTH_KEY, JSON.stringify(next));
+    return next;
+  }, []);
 
   const unlock = useCallback(() => setIsLocked(false), []);
 
@@ -127,7 +125,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       return false;
     },
-    [appPin]
+    [appPin],
   );
 
   const setBiometricEnabled = useCallback(
@@ -146,7 +144,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await persist({ biometricEnabled: v });
       if (v) setIsLocked(true);
     },
-    [persist, registerBiometrics]
+    [persist, registerBiometrics],
   );
 
   const updatePin = useCallback(
@@ -155,7 +153,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await persist({ appPin: pin });
       if (pin) setIsLocked(true);
     },
-    [persist]
+    [persist],
   );
 
   const removePin = useCallback(async () => {

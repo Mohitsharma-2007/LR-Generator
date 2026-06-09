@@ -1,6 +1,6 @@
 /**
  * Biometric authentication service.
- * 
+ *
  * On native (Capacitor Android/iOS): uses capacitor-native-biometric
  *   which calls Android BiometricPrompt / iOS FaceID directly.
  * On web: falls back to WebAuthn platform authenticator (Touch ID, Windows Hello).
@@ -45,7 +45,7 @@ export async function enrollBiometrics(): Promise<string | null> {
   const isSupported = await checkBiometricsSupport();
   if (!isSupported) {
     throw new Error(
-      "Biometric hardware or authentication not supported on this device."
+      "Biometric hardware or authentication not supported on this device.",
     );
   }
 

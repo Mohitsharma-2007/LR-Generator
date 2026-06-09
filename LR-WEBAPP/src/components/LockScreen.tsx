@@ -8,7 +8,13 @@ import { triggerHaptic } from "../services/hapticsService";
 const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "DEL"];
 
 export function LockScreen() {
-  const { authenticateBiometric, verifyPin, appPin, biometricEnabled, hasBiometrics } = useAuth();
+  const {
+    authenticateBiometric,
+    verifyPin,
+    appPin,
+    biometricEnabled,
+    hasBiometrics,
+  } = useAuth();
   const [pin, setPin] = useState("");
   const [error, setError] = useState("");
   const [shake, setShake] = useState(false);
@@ -110,7 +116,15 @@ export function LockScreen() {
         }}
       >
         {/* Top Branding */}
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "40px", textAlign: "center" }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            marginBottom: "40px",
+            textAlign: "center",
+          }}
+        >
           <div
             style={{
               width: "96px",
@@ -125,7 +139,11 @@ export function LockScreen() {
               overflow: "hidden",
             }}
           >
-            <img src={logoUrl} alt="Logo" style={{ width: "86px", height: "86px", borderRadius: "50%" }} />
+            <img
+              src={logoUrl}
+              alt="Logo"
+              style={{ width: "86px", height: "86px", borderRadius: "50%" }}
+            />
           </div>
           <h1
             style={{
@@ -151,14 +169,28 @@ export function LockScreen() {
           >
             TRANSPORT CO.
           </p>
-          <span style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "12px", letterSpacing: "0.5px" }}>
+          <span
+            style={{
+              fontSize: "11px",
+              color: "var(--text-muted)",
+              marginTop: "12px",
+              letterSpacing: "0.5px",
+            }}
+          >
             LR Generator · Secure Access
           </span>
         </div>
 
         {/* PIN pad */}
         {showPin && (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              width: "100%",
+            }}
+          >
             <span
               style={{
                 fontSize: "13px",
@@ -188,8 +220,10 @@ export function LockScreen() {
                     height: "13px",
                     borderRadius: "50%",
                     border: "1.5px solid rgba(212, 168, 67, 0.5)",
-                    backgroundColor: pin.length > i ? "var(--gold)" : "transparent",
-                    transition: "background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1)",
+                    backgroundColor:
+                      pin.length > i ? "var(--gold)" : "transparent",
+                    transition:
+                      "background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1)",
                   }}
                 />
               ))}
@@ -207,7 +241,9 @@ export function LockScreen() {
             >
               {KEYS.map((key, idx) => {
                 if (key === "") {
-                  return <div key={idx} style={{ width: "72px", height: "72px" }} />;
+                  return (
+                    <div key={idx} style={{ width: "72px", height: "72px" }} />
+                  );
                 }
                 return (
                   <button
@@ -230,20 +266,28 @@ export function LockScreen() {
                       outline: "none",
                     }}
                     onMouseDown={(e) => {
-                      e.currentTarget.style.backgroundColor = "rgba(212, 168, 67, 0.15)";
+                      e.currentTarget.style.backgroundColor =
+                        "rgba(212, 168, 67, 0.15)";
                       e.currentTarget.style.borderColor = "var(--gold)";
                     }}
                     onMouseUp={(e) => {
-                      e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.04)";
-                      e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.07)";
+                      e.currentTarget.style.backgroundColor =
+                        "rgba(255, 255, 255, 0.04)";
+                      e.currentTarget.style.borderColor =
+                        "rgba(255, 255, 255, 0.07)";
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.04)";
-                      e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.07)";
+                      e.currentTarget.style.backgroundColor =
+                        "rgba(255, 255, 255, 0.04)";
+                      e.currentTarget.style.borderColor =
+                        "rgba(255, 255, 255, 0.07)";
                     }}
                   >
                     {key === "DEL" ? (
-                      <Icons.Delete size={20} style={{ color: "rgba(212, 168, 67, 0.7)" }} />
+                      <Icons.Delete
+                        size={20}
+                        style={{ color: "rgba(212, 168, 67, 0.7)" }}
+                      />
                     ) : (
                       key
                     )}
@@ -270,19 +314,35 @@ export function LockScreen() {
             }}
           >
             <Icons.Fingerprint size={18} />
-            <span style={{ fontSize: "14px", fontWeight: 600 }}>Use Biometrics</span>
+            <span style={{ fontSize: "14px", fontWeight: 600 }}>
+              Use Biometrics
+            </span>
           </button>
         )}
 
         {!showPin && !showBiometric && (
-          <span style={{ color: "var(--text-muted)", fontSize: "13px", marginTop: "20px" }}>
+          <span
+            style={{
+              color: "var(--text-muted)",
+              fontSize: "13px",
+              marginTop: "20px",
+            }}
+          >
             No lock method active
           </span>
         )}
       </div>
 
-      <div style={{ position: "absolute", bottom: "24px", textAlign: "center" }}>
-        <span style={{ fontSize: "10px", color: "var(--text-muted)", letterSpacing: "0.3px" }}>
+      <div
+        style={{ position: "absolute", bottom: "24px", textAlign: "center" }}
+      >
+        <span
+          style={{
+            fontSize: "10px",
+            color: "var(--text-muted)",
+            letterSpacing: "0.3px",
+          }}
+        >
           Private & Secure · Maha Laxmi Transport Co.
         </span>
       </div>

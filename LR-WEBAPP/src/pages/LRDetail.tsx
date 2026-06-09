@@ -7,24 +7,16 @@ import {
   saveToDownloads,
   sharePDF,
   shareToWhatsApp,
-  getPDFBase64,
 } from "../services/pdfService";
-import { sendEmail } from "../services/emailService";
 import { showNotification } from "../services/notificationService";
 import { triggerHaptic } from "../services/hapticsService";
-import { DotLottieReact } from "@lottiefiles/dotlottie-react";
-import sentAnimation from "../assets/lottie/sent.json";
 
 export default function LRDetail() {
   const [, setLocation] = useLocation();
   const { id } = useParams<{ id: string }>();
-  const { getLRById, deleteLR, settings } = useLR();
+  const { getLRById, deleteLR } = useLR();
 
   const lr = getLRById(id || "");
-  const [showEmailPicker, setShowEmailPicker] = useState(false);
-  const [selectedEmails, setSelectedEmails] = useState<string[]>([]);
-  const [sendingEmail, setSendingEmail] = useState(false);
-  const [showSent, setShowSent] = useState(false);
   const [generatingPDF, setGeneratingPDF] = useState(false);
 
   if (!lr) {
@@ -40,8 +32,14 @@ export default function LRDetail() {
         }}
       >
         <Icons.File size={40} style={{ color: "var(--text-muted)" }} />
-        <span style={{ fontSize: "16px", color: "var(--text-muted)" }}>LR not found</span>
-        <button onClick={() => setLocation("/lrs")} className="btn-primary" style={{ padding: "10px 20px" }}>
+        <span style={{ fontSize: "16px", color: "var(--text-muted)" }}>
+          LR not found
+        </span>
+        <button
+          onClick={() => setLocation("/lrs")}
+          className="btn-primary"
+          style={{ padding: "10px 20px" }}
+        >
           Go back
         </button>
       </div>
@@ -110,58 +108,7 @@ export default function LRDetail() {
     }
   }
 
-  // Toggle selected emails for recipients
-  function toggleEmail(email: string) {
-    setSelectedEmails((prev) =>
-      prev.includes(email) ? prev.filter((e) => e !== email) : [...prev, email]
-    );
-  }
 
-  // Send Email with PDF attachment
-  async function handleSendEmail() {
-    if (selectedEmails.length === 0) {
-      alert("Please select at least one recipient.");
-      return;
-    }
-    if (!settings.senderEmail || !settings.googleAppPassword) {
-      alert("Please configure SMTP Gmail and App Password in Settings first.");
-      setLocation("/settings");
-      return;
-    }
-
-    triggerHaptic("light");
-    setSendingEmail(true);
-    setShowEmailPicker(false);
-
-    try {
-      // 1. Generate PDF blob client-side
-      const blob = await generatePDFBlob(lrData);
-      
-      // 2. Convert to base64
-      const base64Data = await getPDFBase64(blob);
-
-      // 3. Send email via server
-      await sendEmail({
-        to: selectedEmails,
-        subject: `LR ${lrData.lrNo} - Maha Laxmi Transport Co.`,
-        body: `Please find the attached Lorry Receipt ${lrData.lrNo} for your reference.\n\nDate: ${lrData.date}\nRoute: ${route.name}\nVehicle: ${lrData.vehicleNo}\nFreight: ₹${lrData.frightCharge.toLocaleString("en-IN")}\n\nRegards,\nMaha Laxmi Transport Co.`,
-        senderEmail: settings.senderEmail,
-        appPassword: settings.googleAppPassword,
-        pdfBase64: base64Data,
-        pdfFilename: `${lrData.lrNo}.pdf`,
-      });
-
-      triggerHaptic("success");
-      setShowSent(true);
-      showNotification("Email Sent", `LR ${lrData.lrNo} emailed to ${selectedEmails.length} recipient(s)`);
-      setTimeout(() => setShowSent(false), 2500);
-    } catch (err) {
-      triggerHaptic("error");
-      alert("Failed to send email: " + String(err));
-    } finally {
-      setSendingEmail(false);
-    }
-  }
 
   // Delete LR
   function handleDelete() {
@@ -173,22 +120,72 @@ export default function LRDetail() {
   }
 
   return (
-    <div className="animate-fade-in-up" style={{ padding: "20px 0", display: "flex", flexDirection: "column", gap: "20px" }}>
+    <div
+      className="animate-fade-in-up"
+      style={{
+        padding: "20px 0",
+        display: "flex",
+        flexDirection: "column",
+        gap: "20px",
+      }}
+    >
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid var(--card-border)", paddingBottom: "14px" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          borderBottom: "1px solid var(--card-border)",
+          paddingBottom: "14px",
+        }}
+      >
         <button
           onClick={() => window.history.back()}
-          style={{ background: "none", border: "none", color: "var(--text-primary)", cursor: "pointer", display: "flex" }}
+          style={{
+            background: "none",
+            border: "none",
+            color: "var(--text-primary)",
+            cursor: "pointer",
+            display: "flex",
+          }}
         >
           <Icons.ArrowLeft size={22} />
         </button>
-        <div style={{ flex: 1, textAlign: "center", display: "flex", flexDirection: "column", gap: "2px" }}>
-          <span style={{ fontSize: "16px", fontWeight: 700, color: "var(--gold)", fontFamily: "var(--font-outfit)" }}>{lr.lrNo}</span>
-          <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>{lr.date} · {route.name}</span>
+        <div
+          style={{
+            flex: 1,
+            textAlign: "center",
+            display: "flex",
+            flexDirection: "column",
+            gap: "2px",
+          }}
+        >
+          <span
+            style={{
+              fontSize: "16px",
+              fontWeight: 700,
+              color: "var(--gold)",
+              fontFamily: "var(--font-outfit)",
+            }}
+          >
+            {lr.lrNo}
+          </span>
+          <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
+            {lr.date} · {route.name}
+          </span>
         </div>
         <button
-          onClick={() => { triggerHaptic("light"); setLocation(`/edit-lr/${lr.id}`); }}
-          style={{ background: "none", border: "none", color: "var(--text-primary)", cursor: "pointer", display: "flex" }}
+          onClick={() => {
+            triggerHaptic("light");
+            setLocation(`/edit-lr/${lr.id}`);
+          }}
+          style={{
+            background: "none",
+            border: "none",
+            color: "var(--text-primary)",
+            cursor: "pointer",
+            display: "flex",
+          }}
         >
           <Icons.Edit2 size={18} />
         </button>
@@ -198,41 +195,156 @@ export default function LRDetail() {
       <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
         {/* Quick parameters */}
         <div style={{ display: "flex", gap: "8px" }}>
-          <div className="glass-panel" style={{ flex: 1, padding: "12px", display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
+          <div
+            className="glass-panel"
+            style={{
+              flex: 1,
+              padding: "12px",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "4px",
+            }}
+          >
             <Icons.Truck size={14} style={{ color: "var(--text-muted)" }} />
-            <span style={{ fontSize: "9px", color: "var(--text-muted)", textTransform: "uppercase" }}>Vehicle</span>
-            <span style={{ fontSize: "12px", fontWeight: 600 }}>{lr.vehicleNo}</span>
+            <span
+              style={{
+                fontSize: "9px",
+                color: "var(--text-muted)",
+                textTransform: "uppercase",
+              }}
+            >
+              Vehicle
+            </span>
+            <span style={{ fontSize: "12px", fontWeight: 600 }}>
+              {lr.vehicleNo}
+            </span>
           </div>
-          <div className="glass-panel" style={{ flex: 1, padding: "12px", display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
+          <div
+            className="glass-panel"
+            style={{
+              flex: 1,
+              padding: "12px",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "4px",
+            }}
+          >
             <Icons.Hash size={14} style={{ color: "var(--text-muted)" }} />
-            <span style={{ fontSize: "9px", color: "var(--text-muted)", textTransform: "uppercase" }}>Consignment</span>
-            <span style={{ fontSize: "12px", fontWeight: 600 }}>{lr.consignmentNo}</span>
+            <span
+              style={{
+                fontSize: "9px",
+                color: "var(--text-muted)",
+                textTransform: "uppercase",
+              }}
+            >
+              Consignment
+            </span>
+            <span style={{ fontSize: "12px", fontWeight: 600 }}>
+              {lr.consignmentNo}
+            </span>
           </div>
-          <div className="glass-panel" style={{ flex: 1, padding: "12px", display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", background: "rgba(212,168,67,0.12)", border: "none" }}>
+          <div
+            className="glass-panel"
+            style={{
+              flex: 1,
+              padding: "12px",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "4px",
+              background: "rgba(212,168,67,0.12)",
+              border: "none",
+            }}
+          >
             <Icons.DollarSign size={14} style={{ color: "#0A1628" }} />
-            <span style={{ fontSize: "9px", color: "rgba(10,22,40,0.7)", textTransform: "uppercase" }}>Freight</span>
-            <span style={{ fontSize: "13px", fontWeight: 700, color: "#0A1628" }}>
+            <span
+              style={{
+                fontSize: "9px",
+                color: "rgba(10,22,40,0.7)",
+                textTransform: "uppercase",
+              }}
+            >
+              Freight
+            </span>
+            <span
+              style={{ fontSize: "13px", fontWeight: 700, color: "#0A1628" }}
+            >
               ₹{lr.frightCharge.toLocaleString("en-IN")}
             </span>
           </div>
         </div>
 
         {/* Breakdown Card */}
-        <section className="glass-panel" style={{ padding: "16px", display: "flex", flexDirection: "column", gap: "10px" }}>
-          <h3 style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "1px" }}>
+        <section
+          className="glass-panel"
+          style={{
+            padding: "16px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "10px",
+          }}
+        >
+          <h3
+            style={{
+              fontSize: "11px",
+              fontWeight: 600,
+              color: "var(--text-muted)",
+              textTransform: "uppercase",
+              letterSpacing: "1px",
+            }}
+          >
             Payment Breakdown
           </h3>
-          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: "13px",
+            }}
+          >
             <span style={{ color: "var(--text-secondary)" }}>Total Amount</span>
             <span>₹{total.toLocaleString("en-IN")}</span>
           </div>
-          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
-            <span style={{ color: "var(--text-secondary)" }}>Advance (90%)</span>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: "13px",
+            }}
+          >
+            <span style={{ color: "var(--text-secondary)" }}>
+              Advance (90%)
+            </span>
             <span>₹{advance.toLocaleString("en-IN")}</span>
           </div>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid var(--card-border)", paddingTop: "10px", marginTop: "2px" }}>
-            <span style={{ color: "var(--gold)", fontWeight: 600, fontSize: "13px" }}>Balance</span>
-            <span style={{ color: "var(--gold)", fontWeight: 700, fontSize: "18px" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              borderTop: "1px solid var(--card-border)",
+              paddingTop: "10px",
+              marginTop: "2px",
+            }}
+          >
+            <span
+              style={{
+                color: "var(--gold)",
+                fontWeight: 600,
+                fontSize: "13px",
+              }}
+            >
+              Balance
+            </span>
+            <span
+              style={{
+                color: "var(--gold)",
+                fontWeight: 700,
+                fontSize: "18px",
+              }}
+            >
               ₹{balance.toLocaleString("en-IN")}
             </span>
           </div>
@@ -240,11 +352,28 @@ export default function LRDetail() {
 
         {/* Invoices List */}
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-          <span style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "1px" }}>
+          <span
+            style={{
+              fontSize: "11px",
+              fontWeight: 600,
+              color: "var(--text-muted)",
+              textTransform: "uppercase",
+              letterSpacing: "1px",
+            }}
+          >
             Invoices ({lr.invoices.length})
           </span>
           {lr.invoices.map((inv, idx) => (
-            <div key={inv.id} className="glass-panel" style={{ padding: "12px", display: "flex", alignItems: "center", gap: "12px" }}>
+            <div
+              key={inv.id}
+              className="glass-panel"
+              style={{
+                padding: "12px",
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+              }}
+            >
               <div
                 style={{
                   width: "24px",
@@ -261,24 +390,68 @@ export default function LRDetail() {
               >
                 {idx + 1}
               </div>
-              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "2px" }}>
-                <span style={{ fontSize: "14px", fontWeight: 600, color: "var(--gold)" }}>{inv.invoiceNo}</span>
-                <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>{inv.dropLocation}</span>
+              <div
+                style={{
+                  flex: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "2px",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    color: "var(--gold)",
+                  }}
+                >
+                  {inv.invoiceNo}
+                </span>
+                <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
+                  {inv.dropLocation}
+                </span>
               </div>
-              <span style={{ fontSize: "14px", fontWeight: 600 }}>₹{inv.freightCharge.toLocaleString("en-IN")}</span>
+              <span style={{ fontSize: "14px", fontWeight: 600 }}>
+                ₹{inv.freightCharge.toLocaleString("en-IN")}
+              </span>
             </div>
           ))}
         </div>
 
         {/* Company Bank Details */}
-        <section className="glass-panel" style={{ padding: "16px", display: "flex", flexDirection: "column", gap: "6px" }}>
-          <h3 style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>
+        <section
+          className="glass-panel"
+          style={{
+            padding: "16px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "6px",
+          }}
+        >
+          <h3
+            style={{
+              fontSize: "11px",
+              fontWeight: 600,
+              color: "var(--text-muted)",
+              textTransform: "uppercase",
+              letterSpacing: "1px",
+              marginBottom: "4px",
+            }}
+          >
             Bank Details
           </h3>
-          <span style={{ fontSize: "14px", fontWeight: 600 }}>{COMPANY.bank.beneficiary}</span>
-          <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>A/C: {COMPANY.bank.accountNo}</span>
-          <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>{COMPANY.bank.bank}</span>
-          <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>IFSC: {COMPANY.bank.ifsc}</span>
+          <span style={{ fontSize: "14px", fontWeight: 600 }}>
+            {COMPANY.bank.beneficiary}
+          </span>
+          <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
+            A/C: {COMPANY.bank.accountNo}
+          </span>
+          <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
+            {COMPANY.bank.bank}
+          </span>
+          <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
+            IFSC: {COMPANY.bank.ifsc}
+          </span>
         </section>
 
         {/* Document Print/Share Section */}
@@ -297,7 +470,9 @@ export default function LRDetail() {
           }}
         >
           <Icons.FileText size={40} style={{ color: "var(--gold)" }} />
-          <span style={{ fontSize: "16px", fontWeight: 600 }}>{lr.lrNo}.pdf</span>
+          <span style={{ fontSize: "16px", fontWeight: 600 }}>
+            {lr.lrNo}.pdf
+          </span>
           <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
             Tap to view high-fidelity document preview
           </span>
@@ -336,7 +511,11 @@ export default function LRDetail() {
         <button
           onClick={handleDelete}
           className="btn-secondary"
-          style={{ padding: "12px", borderColor: "rgba(224, 92, 92, 0.2)", color: "var(--error)" }}
+          style={{
+            padding: "12px",
+            borderColor: "rgba(224, 92, 92, 0.2)",
+            color: "var(--error)",
+          }}
           title="Delete Lorry Receipt"
         >
           <Icons.Trash2 size={18} />
@@ -353,23 +532,7 @@ export default function LRDetail() {
           <Icons.Download size={18} />
         </button>
 
-        {/* Send Email */}
-        <button
-          onClick={() => {
-            setSelectedEmails([]);
-            setShowEmailPicker(true);
-          }}
-          className="btn-secondary"
-          style={{ padding: "12px" }}
-          disabled={sendingEmail}
-          title="Send PDF via SMTP Email"
-        >
-          {sendingEmail ? (
-            <Icons.Loader size={18} className="animate-spin-fast" />
-          ) : (
-            <Icons.Mail size={18} />
-          )}
-        </button>
+
 
         {/* Share via WhatsApp */}
         <button
@@ -402,132 +565,6 @@ export default function LRDetail() {
           )}
         </button>
       </div>
-
-      {/* Recipient email picker sheet */}
-      {showEmailPicker && (
-        <div className="modal-overlay" onClick={() => setShowEmailPicker(false)}>
-          <div className="modal-sheet" onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ fontSize: "18px", fontWeight: 700, margin: "0 0 4px 0" }}>Send via Gmail</h3>
-            
-            {settings.emailIds.length === 0 ? (
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px", padding: "20px 0", textAlign: "center" }}>
-                <Icons.Mail size={32} style={{ color: "var(--text-muted)" }} />
-                <span style={{ fontSize: "13px", color: "var(--text-muted)", lineHeight: 1.4 }}>
-                  No recipient email addresses configured. Please add emails in settings first.
-                </span>
-                <button
-                  onClick={() => {
-                    setShowEmailPicker(false);
-                    setLocation("/settings");
-                  }}
-                  className="btn-primary"
-                  style={{ padding: "8px 16px", fontSize: "13px" }}
-                >
-                  Configure Emails
-                </button>
-              </div>
-            ) : (
-              <>
-                <span style={{ fontSize: "12px", color: "var(--text-muted)", display: "block", marginBottom: "12px" }}>
-                  Select recipients to email PDF for {lr.lrNo}
-                </span>
-
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "16px" }}>
-                  {settings.emailIds.map((email) => {
-                    const isSelected = selectedEmails.includes(email);
-                    return (
-                      <div
-                        key={email}
-                        onClick={() => { triggerHaptic("light"); toggleEmail(email); }}
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          padding: "12px",
-                          borderRadius: "10px",
-                          border: "1px solid var(--card-border)",
-                          background: isSelected ? "rgba(212,168,67,0.12)" : "rgba(255,255,255,0.01)",
-                          borderColor: isSelected ? "var(--gold)" : "var(--card-border)",
-                          cursor: "pointer",
-                          gap: "10px",
-                        }}
-                      >
-                        <div
-                          style={{
-                            width: "18px",
-                            height: "18px",
-                            borderRadius: "4px",
-                            border: "1.5px solid",
-                            borderColor: isSelected ? "var(--gold)" : "var(--card-border)",
-                            background: isSelected ? "var(--gold)" : "transparent",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        >
-                          {isSelected && <Icons.Check size={12} style={{ color: "#0A1628" }} />}
-                        </div>
-                        <span style={{ fontSize: "13px", color: "#FFFFFF" }}>{email}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <button
-                  onClick={handleSendEmail}
-                  className="btn-primary"
-                  style={{ width: "100%" }}
-                  disabled={selectedEmails.length === 0}
-                >
-                  <Icons.Send size={14} />
-                  <span>Send to {selectedEmails.length} Recipient{selectedEmails.length !== 1 ? "s" : ""}</span>
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Email sent notification banner */}
-      {showSent && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: "rgba(6, 14, 28, 0.75)",
-            backdropFilter: "blur(12px)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 9999,
-          }}
-        >
-          <div
-            className="glass-panel"
-            style={{
-              padding: "32px",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: "12px",
-              width: "200px",
-              textAlign: "center",
-            }}
-          >
-            <div style={{ width: "100px", height: "100px", display: "flex", justifyContent: "center", alignItems: "center" }}>
-              <DotLottieReact data={sentAnimation} loop={false} autoplay />
-            </div>
-            <span style={{ fontSize: "18px", fontWeight: 700, color: "#FFFFFF" }}>
-              Email Sent!
-            </span>
-            <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>
-              Attachment delivered
-            </span>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

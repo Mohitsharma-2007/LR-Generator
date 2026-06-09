@@ -2,7 +2,13 @@ import { Haptics, ImpactStyle, NotificationType } from "@capacitor/haptics";
 import { Capacitor } from "@capacitor/core";
 
 export const triggerHaptic = async (
-  style: "light" | "medium" | "heavy" | "success" | "warning" | "error" = "light"
+  style:
+    | "light"
+    | "medium"
+    | "heavy"
+    | "success"
+    | "warning"
+    | "error" = "light",
 ) => {
   if (!Capacitor.isNativePlatform()) return;
   try {

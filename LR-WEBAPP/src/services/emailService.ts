@@ -1,3 +1,5 @@
+import { Capacitor } from "@capacitor/core";
+
 interface SendEmailParams {
   to: string[];
   subject: string;
@@ -10,9 +12,16 @@ interface SendEmailParams {
 }
 
 export async function sendEmail(params: SendEmailParams): Promise<void> {
-  // Use custom API URL from settings if defined, otherwise fall back to relative `/api/email/send`
-  const targetUrl = params.apiUrl 
-    ? `${params.apiUrl.replace(/\/$/, "")}/api/email/send`
+  let apiBaseUrl = "";
+  
+  if (Capacitor.isNativePlatform()) {
+    apiBaseUrl = localStorage.getItem("@mltc_api_url") || "http://10.0.2.2:5000";
+  } else {
+    apiBaseUrl = localStorage.getItem("@mltc_api_url") || "";
+  }
+
+  const targetUrl = apiBaseUrl 
+    ? `${apiBaseUrl.replace(/\/$/, "")}/api/email/send`
     : "/api/email/send";
 
   const payload = {

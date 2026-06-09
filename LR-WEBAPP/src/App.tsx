@@ -16,6 +16,7 @@ import Settings from "./pages/Settings";
 import CreateLR from "./pages/CreateLR";
 import EditLR from "./pages/EditLR";
 import LRDetail from "./pages/LRDetail";
+import PreviewLR from "./pages/PreviewLR";
 
 // Icons
 import * as Icons from "lucide-react";
@@ -198,6 +199,7 @@ function InnerApp() {
         <Route path="/create-lr" component={CreateLR} />
         <Route path="/edit-lr/:id" component={EditLR} />
         <Route path="/lr-detail/:id" component={LRDetail} />
+        <Route path="/lr-preview/:id" component={PreviewLR} />
         <Route>
           <div style={{ padding: "40px", textAlign: "center" }}>
             <h3>Page Not Found</h3>

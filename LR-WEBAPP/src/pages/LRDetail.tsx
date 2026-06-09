@@ -72,21 +72,10 @@ export default function LRDetail() {
     }
   }
 
-  // Open direct preview print
-  async function handlePrintPreview() {
+  // Open direct preview page
+  function handlePrintPreview() {
     triggerHaptic("light");
-    setGeneratingPDF(true);
-    try {
-      const blob = await generatePDFBlob(lrData);
-      const url = URL.createObjectURL(blob);
-      triggerHaptic("success");
-      window.open(url, "_blank");
-    } catch (err) {
-      triggerHaptic("error");
-      alert("Failed to generate print preview: " + String(err));
-    } finally {
-      setGeneratingPDF(false);
-    }
+    setLocation(`/lr-preview/${lrData.id}`);
   }
 
   // Share via web share API
@@ -140,17 +129,6 @@ export default function LRDetail() {
       return;
     }
 
-    const customApiUrl = localStorage.getItem("@mltc_api_url") || undefined;
-    
-    // Warn native Android users if they haven't set an API SMTP URL
-    const { Capacitor } = await import("@capacitor/core");
-    if (Capacitor.isNativePlatform() && !customApiUrl) {
-      triggerHaptic("error");
-      alert("API SMTP Server URL is not configured in Settings. Please set it to your server's IP address (e.g., http://192.168.1.5:5000) to send emails from your Android device.");
-      setLocation("/settings");
-      return;
-    }
-
     triggerHaptic("light");
     setSendingEmail(true);
     setShowEmailPicker(false);
@@ -171,7 +149,6 @@ export default function LRDetail() {
         appPassword: settings.googleAppPassword,
         pdfBase64: base64Data,
         pdfFilename: `${lrData.lrNo}.pdf`,
-        apiUrl: customApiUrl,
       });
 
       triggerHaptic("success");
@@ -322,7 +299,7 @@ export default function LRDetail() {
           <Icons.FileText size={40} style={{ color: "var(--gold)" }} />
           <span style={{ fontSize: "16px", fontWeight: 600 }}>{lr.lrNo}.pdf</span>
           <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
-            Tap to generate and open preview in new browser tab
+            Tap to view high-fidelity document preview
           </span>
           <div
             style={{
@@ -338,8 +315,8 @@ export default function LRDetail() {
               marginTop: "4px",
             }}
           >
-            <Icons.ExternalLink size={12} />
-            <span>Open PDF</span>
+            <Icons.Eye size={12} />
+            <span>Preview LR</span>
           </div>
         </section>
       </div>

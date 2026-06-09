@@ -4,7 +4,7 @@ import * as Icons from "lucide-react";
 import { useLR, ROUTES, type InvoiceRecord } from "../context/LRContext";
 import { InvoiceRow } from "../components/InvoiceRow";
 import { triggerHaptic } from "../services/hapticsService";
-import { generateLRHtml } from "../services/pdfHtml";
+import { LRReceiptPreview } from "../components/LRReceiptPreview";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import invoiceMadeAnimation from "../assets/lottie/invoice_made.json";
 
@@ -539,7 +539,7 @@ export default function CreateLR() {
         <div className="modal-overlay" onClick={() => setShowPreview(false)}>
           <div
             className="modal-sheet"
-            style={{ maxWidth: "90%", width: "500px", padding: "20px", display: "flex", flexDirection: "column", gap: "14px" }}
+            style={{ maxWidth: "95%", width: "700px", padding: "20px", display: "flex", flexDirection: "column", gap: "14px" }}
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -551,9 +551,9 @@ export default function CreateLR() {
                 <Icons.X size={18} />
               </button>
             </div>
-            <div style={{ border: "1px solid var(--card-border)", borderRadius: "12px", overflow: "hidden", background: "white" }}>
-              <iframe
-                srcDoc={generateLRHtml({
+            <div style={{ maxHeight: "60vh", overflowY: "auto", border: "1px solid var(--card-border)", borderRadius: "12px", background: "white" }}>
+              <LRReceiptPreview
+                lr={{
                   lrNo,
                   consignmentNo,
                   date,
@@ -561,9 +561,7 @@ export default function CreateLR() {
                   routeId,
                   frightCharge: invoices.reduce((sum, inv) => sum + inv.freightCharge, 0),
                   invoices,
-                } as any)}
-                style={{ width: "100%", height: "450px", border: "none" }}
-                title="LR Live Preview"
+                } as any}
               />
             </div>
             <button

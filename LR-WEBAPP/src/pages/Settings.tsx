@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import * as Icons from "lucide-react";
 import { useLR } from "../context/LRContext";
 import { useAuth } from "../context/AuthContext";
+import { Capacitor } from "@capacitor/core";
+import { Filesystem, Directory, Encoding } from "@capacitor/filesystem";
 
 export default function Settings() {
   const { settings, lrs, updateSettings, restoreBackup } = useLR();
@@ -25,8 +27,7 @@ export default function Settings() {
   const [partnerAddress, setPartnerAddress] = useState(settings.partnerAddress || "");
   const [partnerGst, setPartnerGst] = useState(settings.partnerGst || "");
   
-  // Custom API endpoint option
-  const [apiUrl, setApiUrl] = useState(() => localStorage.getItem("@mltc_api_url") || "");
+
 
   const [showPinModal, setShowPinModal] = useState(false);
   const [pinInput, setPinInput] = useState("");
@@ -48,7 +49,6 @@ export default function Settings() {
         partnerGst: partnerGst.trim(),
         partnerDetails: `${partnerAddress.trim()}\nGSTIN: ${partnerGst.trim()}`,
       });
-      localStorage.setItem("@mltc_api_url", apiUrl.trim());
       alert("Settings saved successfully.");
     } catch (err) {
       alert("Failed to save settings: " + String(err));
@@ -129,7 +129,7 @@ export default function Settings() {
   }
 
   // Local JSON Backup (.lrbackup)
-  function handleExportBackup() {
+  async function handleExportBackup() {
     try {
       const backup = {
         lrs,
@@ -141,20 +141,36 @@ export default function Settings() {
           openrouterApiKey: settings.openrouterApiKey,
           nextLrNumber: settings.nextLrNumber,
           partnerName: settings.partnerName,
+          partnerAddress: settings.partnerAddress,
+          partnerGst: settings.partnerGst,
           partnerDetails: settings.partnerDetails,
         },
       };
 
       const jsonStr = JSON.stringify(backup, null, 2);
-      const blob = new Blob([jsonStr], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `lr_backup_${Date.now()}.lrbackup`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+
+      if (Capacitor.isNativePlatform()) {
+        const filename = `lr_backup_${Date.now()}.lrbackup`;
+        const path = `LR/Backup/${filename}`;
+        await Filesystem.writeFile({
+          path,
+          data: jsonStr,
+          directory: Directory.Documents,
+          encoding: Encoding.UTF8,
+          recursive: true,
+        });
+        alert(`Backup file saved natively to: Documents/${path}`);
+      } else {
+        const blob = new Blob([jsonStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `lr_backup_${Date.now()}.lrbackup`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
     } catch (err) {
       alert("Export failed: " + String(err));
     }
@@ -374,26 +390,14 @@ export default function Settings() {
           />
         </div>
 
-        <div style={{ display: "flex", gap: "12px" }}>
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "4px" }}>
-            <label className="input-label">Next LR Number</label>
-            <input
-              type="number"
-              className="form-input"
-              value={nextLrNumber}
-              onChange={(e) => setNextLrNumber(Number(e.target.value) || 0)}
-            />
-          </div>
-          <div style={{ flex: 2, display: "flex", flexDirection: "column", gap: "4px" }}>
-            <label className="input-label">API SMTP Server URL (relative default)</label>
-            <input
-              type="text"
-              className="form-input"
-              value={apiUrl}
-              onChange={(e) => setApiUrl(e.target.value)}
-              placeholder="e.g. http://localhost:5000"
-            />
-          </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+          <label className="input-label">Next LR Number</label>
+          <input
+            type="number"
+            className="form-input"
+            value={nextLrNumber}
+            onChange={(e) => setNextLrNumber(Number(e.target.value) || 0)}
+          />
         </div>
 
         <button onClick={handleSaveConfig} className="btn-primary" style={{ marginTop: "10px" }}>

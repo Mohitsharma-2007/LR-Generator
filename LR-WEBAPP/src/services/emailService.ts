@@ -10,46 +10,25 @@ interface SendEmailParams {
 }
 
 export async function sendEmail(params: SendEmailParams): Promise<void> {
-  const cleanPassword = params.appPassword.replace(/\s+/g, "");
-
-  // Prepare SMTP.js payload
-  const payload: any = {
-    nocache: Math.floor(1e6 * Math.random() + 1),
-    Action: "Send",
-    Host: "smtp.gmail.com",
-    Port: 587,
-    Username: params.senderEmail,
-    Password: cleanPassword,
-    To: params.to.join(","),
-    From: params.senderEmail,
-    Subject: params.subject,
-    Body: params.body,
-  };
-
-  if (params.pdfBase64 && params.pdfFilename) {
-    payload.Attachments = [
-      {
-        name: params.pdfFilename,
-        data: `data:application/pdf;base64,${params.pdfBase64}`,
-      },
-    ];
-  }
-
-  // SMTP.js expects a stringified JSON payload sent with application/x-www-form-urlencoded content-type
-  const response = await fetch("https://smtpjs.com/v3/smtpjs.aspx", {
+  const url = params.apiUrl || "/api/email/send";
+  const response = await fetch(url, {
     method: "POST",
     headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
+      "Content-Type": "application/json",
     },
-    body: JSON.stringify(payload),
+    body: JSON.stringify(params),
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to connect to email relay: ${response.statusText}`);
-  }
-
-  const resultText = await response.text();
-  if (resultText !== "OK") {
-    throw new Error(resultText || "Failed to send email");
+    let errorMsg = "Failed to send email";
+    try {
+      const errorData = await response.json();
+      if (errorData && errorData.error) {
+        errorMsg = errorData.error;
+      }
+    } catch (e) {
+      // Ignore JSON parse error if response is not JSON
+    }
+    throw new Error(errorMsg);
   }
 }

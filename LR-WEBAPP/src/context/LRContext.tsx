@@ -34,6 +34,7 @@ export interface AppSettings {
   senderEmail: string;
   googleAppPassword: string;
   openrouterApiKey: string;
+  backendApiUrl: string;
   vehicles: string[];
   nextLrNumber: number;
   partnerName: string;
@@ -95,6 +96,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   senderEmail: "",
   googleAppPassword: "",
   openrouterApiKey: "",
+  backendApiUrl: "http://localhost:5000",
   vehicles: ["UP16PT9444"],
   nextLrNumber: 88,
   partnerName: "NISSIN ABC LOGISTICS PVT. LTD.",

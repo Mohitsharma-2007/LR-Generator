@@ -136,6 +136,7 @@ export default function PreviewLR() {
         appPassword: settings.googleAppPassword,
         pdfBase64: base64Data,
         pdfFilename: `${lrData.lrNo}.pdf`,
+        apiUrl: settings.backendApiUrl ? `${settings.backendApiUrl}/api/email/send` : "/api/email/send",
       });
 
       triggerHaptic("success");

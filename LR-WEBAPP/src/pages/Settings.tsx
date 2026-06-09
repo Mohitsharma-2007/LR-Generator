@@ -22,6 +22,7 @@ export default function Settings() {
   const [senderEmail, setSenderEmail] = useState(settings.senderEmail);
   const [googleAppPassword, setGoogleAppPassword] = useState(settings.googleAppPassword);
   const [openrouterApiKey, setOpenrouterApiKey] = useState(settings.openrouterApiKey);
+  const [backendApiUrl, setBackendApiUrl] = useState(settings.backendApiUrl || "http://localhost:5000");
   const [nextLrNumber, setNextLrNumber] = useState(settings.nextLrNumber);
   const [partnerName, setPartnerName] = useState(settings.partnerName || "NISSIN ABC LOGISTICS PVT. LTD.");
   const [partnerAddress, setPartnerAddress] = useState(settings.partnerAddress || "");
@@ -43,6 +44,7 @@ export default function Settings() {
         senderEmail: senderEmail.trim(),
         googleAppPassword: googleAppPassword.trim(),
         openrouterApiKey: openrouterApiKey.trim(),
+        backendApiUrl: backendApiUrl.trim(),
         nextLrNumber: Number(nextLrNumber) || settings.nextLrNumber,
         partnerName: partnerName.trim(),
         partnerAddress: partnerAddress.trim(),
@@ -243,6 +245,7 @@ export default function Settings() {
         setSenderEmail(importedSettings.senderEmail);
         setGoogleAppPassword(importedSettings.googleAppPassword);
         setOpenrouterApiKey(importedSettings.openrouterApiKey);
+        setBackendApiUrl(importedSettings.backendApiUrl);
         setNextLrNumber(importedSettings.nextLrNumber);
         setPartnerName(importedSettings.partnerName);
         setPartnerAddress(importedSettings.partnerAddress);
@@ -352,6 +355,17 @@ export default function Settings() {
             value={openrouterApiKey}
             onChange={(e) => setOpenrouterApiKey(e.target.value)}
             placeholder="sk-or-v1-..."
+          />
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+          <label className="input-label">Cloud API URL (for Android App)</label>
+          <input
+            type="url"
+            className="form-input"
+            value={backendApiUrl}
+            onChange={(e) => setBackendApiUrl(e.target.value)}
+            placeholder="e.g. https://lr-api.onrender.com"
           />
         </div>
 

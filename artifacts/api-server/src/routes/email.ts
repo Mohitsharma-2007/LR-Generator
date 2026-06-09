@@ -31,14 +31,14 @@ router.post("/send", async (req, res) => {
     const cleanPassword = appPassword.replace(/\s+/g, "");
 
     const transporter = nodemailer.createTransport({
+      service: "gmail",
       host: "smtp.gmail.com",
-      port: 587,
-      secure: false,
+      port: 465,
+      secure: true,
       auth: {
         user: senderEmail,
         pass: cleanPassword,
       },
-      tls: { rejectUnauthorized: false },
     });
 
     const recipients = Array.isArray(to) ? to.join(",") : to;
